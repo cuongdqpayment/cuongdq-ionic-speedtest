@@ -8,6 +8,8 @@ const request = require('request');
 const HTMLParser = require('node-html-parser');
 const cheerio = require('cheerio');
 const bodyParser = require('body-parser');
+let jwt = require('jsonwebtoken');
+const config = require('./jwt/config.js');
 let middleware = require('./jwt/middleware');
 let databaseService = require('./db/database-service');
 
@@ -18,31 +20,40 @@ class HandlerGenerator {
 
   parseForm(req, res, next) {
 
-    console.log(req.body);
-
     var jsonReturn = {
       your_params: [],
       your_files: [],
       your_error: []
     };
 
+    //console.log('post data??');
+    
     const form = new formidable.IncomingForm();
+    
     form.parse(req, function (err, fields, files) {
+      
+      //console.log('Parse form??');
+
+      let username='';
+      let password='';
+
       if (err) {
         //jsonReturn.your_error.push(err);
         next();
       } else {
+        
         for (let key in fields) {
+          if (key='username') username =fields[key];
+          if (key='password') password =fields[key];
           jsonReturn.your_params.push({
             name: key,
             value: fields[key]
           });
         }
       }
-
-      let username = jsonReturn.your_params.username;
-      let password = jsonReturn.your_params.password;
-
+      
+      //console.log(jsonReturn);
+      
       let mockedUsername = 'admin';
       let mockedPassword = 'password';
 
@@ -52,8 +63,6 @@ class HandlerGenerator {
             username: username,
             req_url: req.url,
             req_method: req.method,
-            req_link: req.protocol + '://' + req.get('host'),
-            req_device: req.headers["user-agent"],
             req_time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
           },
             config.secret,
@@ -68,13 +77,15 @@ class HandlerGenerator {
             token: token
           });
         } else {
-          res.send(403).json({
+          //.send(403)
+          res.json({
             success: false,
             message: 'Incorrect username or password'
           });
         }
       } else {
-        res.send(400).json({
+        //.send(400)
+        res.json({
           success: false,
           message: 'Authentication failed! Please check the request'
         });
@@ -82,24 +93,20 @@ class HandlerGenerator {
     })
   }
 
+
   index(req, res) {
     res.json({
       success: true,
       message: 'Đây là trang index json nhé'
     });
   }
+
 }
 
 // Starting point of the server
 function main() {
   let app = express(); // Export app for other routes to use
   let handlers = new HandlerGenerator();
-
-  app.use(bodyParser.urlencoded({
-    // Middleware
-    extended: true
-  }));
-  app.use(bodyParser.json());
 
   //luu log truy cap
   app.use(databaseService.HandleDatabase.logAccess);

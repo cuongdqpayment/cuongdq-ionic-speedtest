@@ -36,6 +36,14 @@ export class HomePage {
       .then(data => console.log(data))
       .catch(err => console.log(err));
     ;
+    
 
+    /* this.httpClient.post('/login', JSON.stringify({
+      username: this.myFromGroup.get('user').value,
+      password: this.myFromGroup.get('pass').value
+      }))
+      .toPromise()
+      .then(data => console.log(data))
+      .catch(err => console.log(err)); */
   }
 }
