@@ -1,8 +1,8 @@
 {
   "name": "cuongdq-jwt-oauth",
   "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "http://ionicframework.com/",
+  "author": "Cuongdq",
+  "homepage": "https://cuongdq-ionic.herokuapp.com/",
   "private": true,
   "scripts": {
     "start": "ionic-app-scripts serve",
@@ -50,13 +50,12 @@
     "sqlite3": "^4.0.4",
     "sw-toolbox": "3.6.0",
     "url": "^0.11.0",
-    "zone.js": "0.8.26"
-  },
-  "devDependencies": {
+    "zone.js": "0.8.26",
     "@ionic/app-scripts": "3.2.0",
     "typescript": "~2.6.2"
   },
-  "description": "An Ionic project",
+  "devDependencies": {},
+  "description": "An Cuongdq Project",
   "cordova": {
     "plugins": {
       "cordova-plugin-whitelist": {},
