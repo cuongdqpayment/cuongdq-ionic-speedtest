@@ -2,7 +2,7 @@
 
 const sqlite3 = require('sqlite3').verbose();
 const Promise = require('bluebird');
-const isSilence = require('./config');
+const isSilence = require('./config').keep_silence;
 
 /* var dataType = {};
 
