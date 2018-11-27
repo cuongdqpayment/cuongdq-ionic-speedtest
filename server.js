@@ -14,13 +14,15 @@ let middleware = require('./jwt/middleware');
 function main(isHttp, isHttps) {
 
   let app = express(); // Export app for other routes to use
+  
+  //khoi tao trung gian xu ly dieu khien tao token, database
   let handlers = middleware.HandlerGenerator;
   //luu log truy cap
   app.use(handlers.logAccess);
  
   //CHONG TAN CONG DDDOS
   //ngan chan truy cap ddos tra ket qua cho user neu truy cap tan suat lon 
-  app.use(require('./config').express('ip', 'path'));
+  app.use(handlers.ddosPrevent.express('ip', 'path'));
 
   //1.dang ky duong dan tuyet doi co dinh cho ionic
   app.use(express.static(__dirname + '/www'));
@@ -30,6 +32,12 @@ function main(isHttp, isHttps) {
   //kiem tra token hop le hay khong, neu khong hop le thi tra ve trang chu
   //neu hop le thi tra ket qua ve
   app.get('/api', middleware.checkToken, handlers.index);
+
+  //de truyen csdl vao doi tuong nao viet ham nhu sau
+  /* app.use((res,res,next)=>{
+      //callFunction(req,res,next,middleware.db)
+  }); */
+
 
   //ham tra loi cac dia chi khong co
   //The 404 Route (ALWAYS Keep this as the last route)
