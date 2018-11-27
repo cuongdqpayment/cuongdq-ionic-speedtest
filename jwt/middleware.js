@@ -1,10 +1,9 @@
-let jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const config = require('./config.js');
 //xu ly form data post len
 const formidable = require('formidable');
-
 //khai bao csdl
-let databaseService = require('../db/database-service');
+const databaseService = require('../db/database-service');
 //tao bang du lieu luu tru
 databaseService.HandleDatabase.init();
 
@@ -123,14 +122,11 @@ class HandlerGenerator {
   errorProcess(err, req, res, next) {
     res.end(JSON.stringify(err))
   }
-
-  ddosPrevent() {
-    //phong chong tan cong
-  }
-
+  
 }
 
 module.exports = {
-  checkToken: checkToken,
-  HandlerGenerator: new HandlerGenerator()
+  db: databaseService, //chuyen db cho server 
+  checkToken: checkToken, //kiem tra token
+  HandlerGenerator: new HandlerGenerator() //dieu khien 
 };
