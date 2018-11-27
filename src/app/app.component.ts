@@ -6,15 +6,8 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 
 import { HomePage } from '../pages/home/home';
 
-/* cac kieu lenh import trong angular
-import './polyfills.ts';
-import { Component } from '@angular/core';
-import HomeComponent from './pages/home/home-page.component';
-import * as _ from 'lodash';
-import assert = require('assert');
- */
 
- import NodeRSA from 'node-rsa';
+import NodeRSA from 'node-rsa';
 
 @Component({
   templateUrl: 'app.html'
