@@ -37,14 +37,25 @@ let checkToken = (req, res, next) => {
   }
 };
 
-
+var RSAKey;
 class HandlerGenerator {
 
-  getPublickeyJson(req, res, next) {
+   getRSAKey(){
+     console.log(RSAKey);
+   }
+   
+   getPublickeyJson(req, res, next) {
+    
+    getRSAKey();
+    
     //tra cho client khoa public qua json
     databaseService.HandleDatabase.
-    getServiceKey('web-mf3-gate')
+    createServiceKey(databaseService.service_id)
     .then(serverkey=>{
+      //gan vao de su dung lay lai lan sau nhe
+      RSAKey = serverkey;
+      console.log(RSAKey); 
+
       res.writeHead(200, { 'Content-Type': 'application/json'});
       res.end(JSON.stringify({
         SERVICE_ID: serverkey.SERVICE_ID,
@@ -55,7 +66,8 @@ class HandlerGenerator {
     })
   }
 
-  parseForm(req, res, next) {
+  //login post
+  login(req, res, next) {
 
     var jsonReturn = {
       your_params: [],
@@ -81,6 +93,9 @@ class HandlerGenerator {
           });
         }
       }
+
+      //giai ma private key
+      let decryptedPass = password;
 
       let mockedUsername = 'admin';
       let mockedPassword = 'password';

@@ -36,7 +36,7 @@ function main(isHttp, isHttps) {
   app.get('/key-json', handlers.getPublickeyJson);
 
   // Routes & Handlers
-  app.post('/login', handlers.parseForm);
+  app.post('/login', handlers.login);
   //kiem tra token hop le hay khong, neu khong hop le thi tra ve trang chu
   //neu hop le thi tra ket qua ve
   app.get('/api', middleware.checkToken, handlers.index);

@@ -11,11 +11,14 @@ const config = require('./lib/config');
 const isSilence = config.keep_silence;
 
 const dirDB = 'db';
+
 if (!fs.existsSync(dirDB)) {
     fs.mkdirSync(dirDB);
 }
 var db = new AppDAO('./' + dirDB + '/'+config.database_name);
 
+//bien lay key sau nay qua class
+var RSAKeyRow;
 class HandleDatabase {
     //khoi tao cac bang luu so lieu
     init(){
@@ -388,10 +391,25 @@ class HandleDatabase {
             ]
         };
         
-        db.createTable(serverRSA).then(data=>{ if (!isSilence) console.log(data)
+        db.createTable(serverRSA).then(data=>{ 
+            if (!isSilence) console.log(data);
+            //tao xong db, lay RSAKey su dung chung
+            this.createServiceKey(config.service_key)
+            .then(RSAKey=>{
+                //gan cho bien toan cuc se lay lai bien toan cuc qua ham
+                RSAKeyRow = RSAKey;
+                //console.log(RSAKeyRow);
+            })
         });
-
+        
     } //end init
+    
+    
+    getServiceKey(service_id){
+        //khong lay duoc
+        console.log(RSAKeyRow);
+        return RSAKeyRow;
+    }
 
     //log truy cap tu request
     logAccess(req, res, next){
@@ -438,10 +456,12 @@ class HandleDatabase {
     }
 
     //getKey de su dung dich vu
-    getServiceKey(service_id){
-        return db.getRst("select * from SERVER_KEYS where SERVICE_ID='"+service_id+"'")
+    createServiceKey(service_id){
+        var serviceKey = (service_id)?service_id:config.service_key;
+        return db.getRst("select * from SERVER_KEYS where SERVICE_ID='"+serviceKey+"'")
         .then(row=>{
             if (row){
+                //console.log('Lay tu csdl:');
                 return row;
             }else{
                 let key = new NodeRSA({ b: 512 }, { signingScheme: 'pkcs1-sha256' });
@@ -449,7 +469,7 @@ class HandleDatabase {
                 cols:[
                         {
                         name:'SERVICE_ID',
-                        value: service_id
+                        value: serviceKey
                         },
                         {
                         name:'PRIVATE_KEY',
@@ -465,8 +485,11 @@ class HandleDatabase {
                         }
                     ]
                 };
-                db.insert(insertTable).then(data=>{if (!isSilence) console.log(data)});
-                return { SERVICE_ID: service_id,
+                db.insert(insertTable).then(data=>{
+                    if (!isSilence) console.log(data)
+                });
+                //console.log('Lay tu khoi tao moi');
+                return { SERVICE_ID: serviceKey,
                          PRIVATE_KEY: key.exportKey('private'),
                          PUBLIC_KEY: key.exportKey('public'),
                          SERVICE_NAME: 'Khóa của dịch vụ web c3',
@@ -474,13 +497,13 @@ class HandleDatabase {
             }
         })
     }
-
-    
 }
 
 module.exports = {
     //la doi tuong database su dung cac lenh
     db:db,
+    //service_id ma dich vu 
+    service_id: config.service_key,
     //dieu khien luu tru csdl
     HandleDatabase: new HandleDatabase()
 };
