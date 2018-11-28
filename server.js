@@ -19,6 +19,10 @@ function main(isHttp, isHttps) {
   let handlers = middleware.HandlerGenerator;
   //luu log truy cap
   app.use(handlers.logAccess);
+
+  //thiet lap cac tham so header dieu khien chung
+  //cho phep goi qua ajax ...
+  app.use(handlers.cors);
  
   //CHONG TAN CONG DDDOS
   //ngan chan truy cap ddos tra ket qua cho user neu truy cap tan suat lon 
@@ -26,6 +30,10 @@ function main(isHttp, isHttps) {
 
   //1.dang ky duong dan tuyet doi co dinh cho ionic
   app.use(express.static(__dirname + '/www'));
+
+
+  //Tra khoa public cho client
+  app.get('/key-json', handlers.getPublickeyJson);
 
   // Routes & Handlers
   app.post('/login', handlers.parseForm);

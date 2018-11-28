@@ -1,5 +1,9 @@
 const fs = require('fs');
 const url = require('url');
+
+//khoi tao NodeRSA de truyen nhan du lieu, ma hoa
+const NodeRSA = require('node-rsa');
+
 //chen 2 doi tuong su dung cho sqlite - cuongdq
 const AppDAO = require('./lib/sqlite-dao');
 const dataType = require('./lib/sqlite-datatype');
@@ -15,6 +19,7 @@ var db = new AppDAO('./' + dirDB + '/'+config.database_name);
 class HandleDatabase {
     //khoi tao cac bang luu so lieu
     init(){
+        //bang ghi du lieu truy cap
         var admin ={
             name: 'SOCIAL_USERS',
             cols: [
@@ -300,8 +305,6 @@ class HandleDatabase {
         db.createTable(logs).then(data=>{if (!isSilence) console.log(data)
         });
         
-        
-        
         var log_details ={
             name: 'LOG_ACCESS_DETAILS',
             cols: [
@@ -346,7 +349,49 @@ class HandleDatabase {
         
         db.createTable(log_details).then(data=>{if (!isSilence) console.log(data)
         });
-    }
+        
+        //tao bang chua key
+        //bang du lieu luu RSA cua server
+        var serverRSA ={
+            name: 'SERVER_KEYS',
+            cols: [
+                {
+                    name: 'SERVICE_ID',
+                    type: dataType.text,
+                    option_key: 'PRIMARY KEY NOT NULL',
+                    description: 'Mã ID của Từng dịch vụ có key riêng theo từng hệ thống'
+                },
+                {
+                    name: 'PRIVATE_KEY',
+                    type: dataType.text,
+                    option_key: 'NOT NULL',
+                    description: 'Mã khóa riêng cho dịch vụ này được tạo ra một lần'
+                },
+                {
+                    name: 'PUBLIC_KEY',
+                    type: dataType.text,
+                    option_key: 'NOT NULL',
+                    description: 'Mã khóa riêng cho dịch vụ này được tạo ra một lần'
+                },
+                {
+                    name: 'SERVICE_NAME',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Tên của dịch vụ này mô tả'
+                },
+                {
+                    name: 'IS_ACTIVE',
+                    type: dataType.numeric,
+                    option_key: 'default 1',
+                    description: 'Trạng thái dịch vụ, không tạo rowid '
+                }
+            ]
+        };
+        
+        db.createTable(serverRSA).then(data=>{ if (!isSilence) console.log(data)
+        });
+
+    } //end init
 
     //log truy cap tu request
     logAccess(req, res, next){
@@ -392,6 +437,45 @@ class HandleDatabase {
     next(); 
     }
 
+    //getKey de su dung dich vu
+    getServiceKey(service_id){
+        return db.getRst("select * from SERVER_KEYS where SERVICE_ID='"+service_id+"'")
+        .then(row=>{
+            if (row){
+                return row;
+            }else{
+                let key = new NodeRSA({ b: 512 }, { signingScheme: 'pkcs1-sha256' });
+                let insertTable={ name:'SERVER_KEYS',
+                cols:[
+                        {
+                        name:'SERVICE_ID',
+                        value: service_id
+                        },
+                        {
+                        name:'PRIVATE_KEY',
+                        value: key.exportKey('private')
+                        },
+                        {
+                        name:'PUBLIC_KEY',
+                        value: key.exportKey('public')
+                        },
+                        {
+                        name:'SERVICE_NAME',
+                        value: 'Khóa của dịch vụ web c3'
+                        }
+                    ]
+                };
+                db.insert(insertTable).then(data=>{if (!isSilence) console.log(data)});
+                return { SERVICE_ID: service_id,
+                         PRIVATE_KEY: key.exportKey('private'),
+                         PUBLIC_KEY: key.exportKey('public'),
+                         SERVICE_NAME: 'Khóa của dịch vụ web c3',
+                         IS_ACTIVE: 1 };
+            }
+        })
+    }
+
+    
 }
 
 module.exports = {

@@ -2,11 +2,11 @@ const jwt = require('jsonwebtoken');
 const config = require('./config.js');
 //xu ly form data post len
 const formidable = require('formidable');
+
 //khai bao csdl
 const databaseService = require('../db/database-service');
 //tao bang du lieu luu tru
 databaseService.HandleDatabase.init();
-
 
 let checkToken = (req, res, next) => {
   let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
@@ -39,6 +39,21 @@ let checkToken = (req, res, next) => {
 
 
 class HandlerGenerator {
+
+  getPublickeyJson(req, res, next) {
+    //tra cho client khoa public qua json
+    databaseService.HandleDatabase.
+    getServiceKey('web-mf3-gate')
+    .then(serverkey=>{
+      res.writeHead(200, { 'Content-Type': 'application/json'});
+      res.end(JSON.stringify({
+        SERVICE_ID: serverkey.SERVICE_ID,
+        PUBLIC_KEY: serverkey.PUBLIC_KEY,
+        SERVICE_NAME: serverkey.SERVICE_NAME,
+        IS_ACTIVE: serverkey.IS_ACTIVE
+      }));
+    })
+  }
 
   parseForm(req, res, next) {
 
@@ -121,6 +136,17 @@ class HandlerGenerator {
 
   errorProcess(err, req, res, next) {
     res.end(JSON.stringify(err))
+  }
+
+  cors(req, res, next){
+    res.header("Access-Control-Allow-Methods", "POST, PUT, OPTIONS, DELETE, GET");
+    res.header('Access-Control-Allow-Origin', 'http://localhost:9235');
+    res.header('Access-Control-Allow-Origin', 'http://localhost:8100');
+    //muon cho phep truy cap tu server nao thi reply cac website tuong ung
+    //res.header("Access-Control-Allow-Origin", "*"); //khai bao chap nhan tat ca de test
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Credentials", true);
+    next();
   }
   
 }
