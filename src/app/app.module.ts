@@ -7,6 +7,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
+import { MainPage } from '../pages/main/main';
 import { RegisterPage } from '../pages/register/register';
 import { ApiService } from '../services/apiService';
 
@@ -14,7 +15,8 @@ import { ApiService } from '../services/apiService';
   declarations: [
     MyApp,
     HomePage,
-    RegisterPage
+    RegisterPage,
+    MainPage
   ],
   imports: [
     BrowserModule,
@@ -27,7 +29,8 @@ import { ApiService } from '../services/apiService';
   entryComponents: [
     MyApp,
     HomePage,
-    RegisterPage
+    RegisterPage,
+    MainPage
   ],
   providers: [
     StatusBar,

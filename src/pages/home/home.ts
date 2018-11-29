@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { RegisterPage } from '../register/register';
+import { MainPage } from '../main/main';
 import { ApiService } from '../../services/apiService';
 
 import NodeRSA from 'node-rsa';
@@ -22,14 +23,10 @@ export class HomePage {
     private apiService: ApiService) { }
 
   ngOnInit() {
-    /* this.apiService.testEncryptDecrypt();
-    this.apiService.testSignVerify(); */
     this.apiService.getServerKey()
     .then(pk=>{
-      //console.log(pk);
       try{
         this.serverKey.importKey(pk);
-        //console.log(this.serverKey);
       }catch(err){
         console.log(err);
       }
@@ -38,13 +35,12 @@ export class HomePage {
     
 
     this.myFromGroup = this.formBuilder.group({
-      user: 'admin',
-      pass: 'password'
+      user: 'cuongdq',
+      pass: '123'
     });
   }
 
   onSubmit() {
-    //ma hoa du lieu truoc khi truyen di
     var passEncrypted='';
     try{
       passEncrypted = this.serverKey.encrypt(this.myFromGroup.get('pass').value, 'base64', 'utf8');
@@ -58,7 +54,12 @@ export class HomePage {
     
     //gui lenh login 
     this.apiService.postLogin(formData)
-    .then(data=>console.log(data))
+    .then(token=>{
+      if (token){
+        console.log(this.apiService.getUserInfo());
+        this.navCtrl.push(MainPage);
+      }
+    })
     .catch(err=>console.log(err));
     
   }

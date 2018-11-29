@@ -1,8 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('./config.js');
-//xu ly form data post len
 const formidable = require('formidable');
-
+const request = require('request');
 //khai bao csdl
 const databaseService = require('../db/database-service');
 //tao bang du lieu luu tru
@@ -14,8 +13,30 @@ databaseService.HandleDatabase.init();
 const NodeRSA = require('node-rsa');
 const MidlewareRSA = new NodeRSA(null,{ signingScheme: 'pkcs1-sha256' });
 
+var RSAKeyObj; //bien public de su dung
 
-let checkToken = (req, res, next) => {
+var tokenSign = (req,userInfo) => {
+  
+  let signTime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+
+    return jwt.sign({
+                      username: userInfo.USERNAME,
+                      nickname: userInfo.DISPLAY_NAME,
+                      image: userInfo.URL_IMAGE,//, //thong tin anh cua nguoi su dung
+                      req_ip: req.ip, //chi duoc cap cho ip nay
+                      req_time: signTime
+                    },
+                      (config.secret + req.ip + req.headers["user-agent"] + signTime)
+                      ,{
+                        expiresIn: '24h' // expires in 24 hours
+                      }
+                    );
+} 
+  
+
+
+var tokenVerify = (req, res, next) => {
+  
   let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
 
   if (token) {
@@ -23,20 +44,26 @@ let checkToken = (req, res, next) => {
       // Remove Bearer from string
       token = token.slice(7, token.length);
     }
-
-    jwt.verify(token, config.secret, (err, decoded) => {
+    var tokenObj=jwt.decode(token);
+    
+    jwt.verify(token
+               ,(config.secret + req.ip + req.headers["user-agent"] + tokenObj.req_time ) 
+               , (err, decoded) => {
       if (err) {
         return res.end(JSON.stringify({
           success: false,
-          message: 'Token is not valid'
+          message: 'Token is not valid',
+          error:err
         }));
       } else {
-        //console.log(decoded);
-        req.decoded = decoded;
+        req.userInfo = decoded;
+        console.log("User Verify OK:");
+        //console.log(req.userInfo);
         next();
       }
     });
   } else {
+
     return res.end(JSON.stringify({
       success: false,
       message: 'Auth token is not supplied'
@@ -44,7 +71,6 @@ let checkToken = (req, res, next) => {
   }
 };
 
-var RSAKeyObj; //bien public de su dung
 class HandlerGenerator {
   //register post
   register(req, res, next) {
@@ -177,31 +203,11 @@ class HandlerGenerator {
           .then(userInfo=>{
             if (userInfo){
               //thuc hien cac noi dung jwt
-              let tokenLogin = jwt.sign({
-                username: userInfo.USERNAME,
-                nickname: userInfo.DISPLAY_NAME,
-                image: userInfo.URL_IMAGE,//, //thong tin anh cua nguoi su dung
-                req_ip: req.ip, //chi duoc cap cho ip nay
-                //req_device: req.headers["user-agent"], //chi cap cho thiet bi nay */
-                /* fullname: userInfo.FULL_NAME,
-                phone: userInfo.PHONE,
-                email: userInfo.EMAIL, */
-                /* address: userInfo.FULL_ADDRESS,
-                last_ip: userInfo.LAST_IP,
-                req_url: req.url,
-                req_method: req.method,
-                //certificate: decryptedPassSign, //chuoi bao mat lop 2 //khi can verify 
-                //req_time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')*/
-              },
-                config.secret,
-                {
-                  expiresIn: '24h' // expires in 24 hours
-                }
-              );
+              let tokenLogin = tokenSign(req,userInfo);
     
               //su dung sha de certificate nua di?? thi client se khong lay duoc thong tin nay
-              console.log(tokenLogin);
-
+              // console.log('tokenLogin:');
+              // console.log(tokenLogin);
 
               res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
               res.end(JSON.stringify({
@@ -240,13 +246,6 @@ class HandlerGenerator {
   //su duong database luu lai
   logAccess(req, res, next) {
     databaseService.HandleDatabase.logAccess(req, res, next);
-  }
-
-  index(req, res) {
-    res.end(JSON.stringify({
-      success: true,
-      message: 'Đây là trang index json nhé'
-    }));
   }
 
   errorProcess(err, req, res, next) {
@@ -311,11 +310,30 @@ class HandlerGenerator {
     res.header("Access-Control-Allow-Credentials", true);
     next();
   }
+
+  getRandomUser(req,res,next){
+    var urlGet='https://randomuser.me/api/?results=20';
+    //const request = require('request');
+    request(urlGet, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          //console.log(body) // Print the google web page.
+          //console.log('req!');
+          //doc body lay mot anh dai dien?? icon?? 
+          res.writeHead(200, {'Content-Type': 'application/json'});
+          res.end(body);
+        } else {
+            //console.log(error);
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(error));
+        }
+    });
+  }
   
 }
 
+
 module.exports = {
   db: databaseService, //chuyen db cho server 
-  checkToken: checkToken, //kiem tra token
+  checkToken: tokenVerify, //kiem tra token
   HandlerGenerator: new HandlerGenerator() //dieu khien 
 };

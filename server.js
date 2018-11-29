@@ -61,7 +61,7 @@ function main(isHttp, isHttps) {
   app.post('/register', handlers.register);
   //kiem tra token hop le hay khong, neu khong hop le thi tra ve trang chu
   //neu hop le thi tra ket qua ve
-  app.get('/api', middleware.checkToken, handlers.index);
+  app.get('/api', middleware.checkToken, handlers.getRandomUser);
 
   //de truyen csdl vao doi tuong nao viet ham nhu sau
   /* app.use((res,res,next)=>{

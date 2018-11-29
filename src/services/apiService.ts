@@ -4,14 +4,18 @@ import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/map'
 
 import NodeRSA from 'node-rsa';
+import jwt from 'jsonwebtoken';
 
 @Injectable()
 export class ApiService {
   
+  public authenticationServer = 'http://localhost:9235';
   public clientKey = new NodeRSA({ b: 512 }, { signingScheme: 'pkcs1-sha256' }); //for decrypte
   public midleKey =  new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for test
   public serverKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for crypte
   public publicKey:any;
+  public userToken:any;
+
 
   constructor(public httpClient: HttpClient, public sanitizer: DomSanitizer) {
     //key nay de test thu noi bo
@@ -57,8 +61,20 @@ export class ApiService {
 
   }
 
+  getUserAPI(){
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Authorization': 'Bearer '+ this.userToken.token
+      })
+    };
+    return this.httpClient.get(this.authenticationServer+'/api',httpOptions)
+             .toPromise()
+             .then(jsonData => {
+              return jsonData;
+             });
+  }
   getServerKey(){
-      return this.httpClient.get('http://localhost:9235/key-json')
+      return this.httpClient.get(this.authenticationServer+'/key-json')
              .toPromise()
              .then(jsonData => {
               this.publicKey = jsonData;
@@ -68,18 +84,32 @@ export class ApiService {
   }
 
   postLogin(formData){
-    return this.httpClient.post('http://localhost:9235/login', formData)
+    return this.httpClient.post(this.authenticationServer+'/login', formData)
                 .toPromise()
                 .then(data => {
-                    //console.log(data);
-                    return data;
+                    this.userToken=data;
+                    return this.userToken.token;
                 });
             
   }
 
+  getUserToken(){
+    return this.userToken.token;
+  }
+
+  getUserInfo(){
+    let userInfo={};
+    try{
+      userInfo= jwt.decode(this.userToken.token);
+      //console.log(userInfo);
+    }catch(err){
+      //console.log(err);
+    }
+    return userInfo;
+  }
   //gui dang ky user
   postRegister(formData){
-    return this.httpClient.post('http://localhost:9235/register', formData)
+    return this.httpClient.post(this.authenticationServer+'/register', formData)
                 .toPromise()
                 .then(data => {
                     return data;
