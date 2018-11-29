@@ -177,20 +177,21 @@ class HandlerGenerator {
           .then(userInfo=>{
             if (userInfo){
               //thuc hien cac noi dung jwt
-              let token = jwt.sign({
+              let tokenLogin = jwt.sign({
                 username: userInfo.USERNAME,
                 nickname: userInfo.DISPLAY_NAME,
-                fullname: userInfo.FULL_NAME,
+                image: userInfo.URL_IMAGE,//, //thong tin anh cua nguoi su dung
+                req_ip: req.ip, //chi duoc cap cho ip nay
+                //req_device: req.headers["user-agent"], //chi cap cho thiet bi nay */
+                /* fullname: userInfo.FULL_NAME,
                 phone: userInfo.PHONE,
-                email: userInfo.EMAIL,
-                address: userInfo.FULL_ADDRESS,
+                email: userInfo.EMAIL, */
+                /* address: userInfo.FULL_ADDRESS,
                 last_ip: userInfo.LAST_IP,
                 req_url: req.url,
                 req_method: req.method,
-                req_ip: req.ip,
-                req_device: req.headers["user-agent"], //device,ip,platform
-                certificate: decryptedPassSign, //chuoi bao mat lop 2 //khi can verify 
-                req_time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                //certificate: decryptedPassSign, //chuoi bao mat lop 2 //khi can verify 
+                //req_time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')*/
               },
                 config.secret,
                 {
@@ -198,11 +199,15 @@ class HandlerGenerator {
                 }
               );
     
+              //su dung sha de certificate nua di?? thi client se khong lay duoc thong tin nay
+              console.log(tokenLogin);
+
+
               res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
               res.end(JSON.stringify({
                 success: true,
                 message: 'Chúc mừng bạn đã login thành công! Hãy sử dụng thẻ truy cập để yêu cầu dữ liệu của chúng tôi trong 24h tới!',
-                token: token
+                token: tokenLogin
               }));
             }else{
               res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
