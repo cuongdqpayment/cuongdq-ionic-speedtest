@@ -7,12 +7,14 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
+import { RegisterPage } from '../pages/register/register';
 import { ApiService } from '../services/apiService';
 
 @NgModule({
   declarations: [
     MyApp,
-    HomePage
+    HomePage,
+    RegisterPage
   ],
   imports: [
     BrowserModule,
@@ -24,7 +26,8 @@ import { ApiService } from '../services/apiService';
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    HomePage
+    HomePage,
+    RegisterPage
   ],
   providers: [
     StatusBar,

@@ -77,6 +77,16 @@ export class ApiService {
             
   }
 
+  //gui dang ky user
+  postRegister(formData){
+    return this.httpClient.post('http://localhost:9235/register', formData)
+                .toPromise()
+                .then(data => {
+                    return data;
+                });
+            
+  }
+
   //lay user mau json
   getRandomUser(nRecord: number) {
     return this.httpClient.get('https://randomuser.me/api/?results=' + nRecord)

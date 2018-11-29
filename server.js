@@ -10,6 +10,18 @@ const os = require('os');
 
 let middleware = require('./jwt/middleware');
 
+/**
+ * CAC CONTENT_TYPE TRA VE CLIENT LUU Y NHU SAU:
+ * 1. TRA JSON KET QUA DUNG: DEFAULT LA UTF-8
+ * res.writeHead(200, { 'Content-Type': 'application/json'});
+ * 2. TRA JSON KET QUA SAI:
+ * res.writeHead(404, { 'Content-Type': 'application/json'});
+ * 3. TRA VE WEB HTML: Dung la 200/sai la 404
+ * res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8' });
+ * 4. TRA VE FILE UNG DUNG: Dung la 200
+ * res.writeHead(200, {'Content-Type': mime.lookup(filename) });
+ * 
+ */
 // Starting point of the server
 function main(isHttp, isHttps) {
 
@@ -44,6 +56,9 @@ function main(isHttp, isHttps) {
 
   // Routes & Handlers
   app.post('/login', handlers.login);
+
+  //Register user gửi lên form đăng ký
+  app.post('/register', handlers.register);
   //kiem tra token hop le hay khong, neu khong hop le thi tra ve trang chu
   //neu hop le thi tra ket qua ve
   app.get('/api', middleware.checkToken, handlers.index);

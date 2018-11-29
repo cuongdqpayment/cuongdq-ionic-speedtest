@@ -46,18 +46,12 @@ let checkToken = (req, res, next) => {
 
 var RSAKeyObj; //bien public de su dung
 class HandlerGenerator {
-  //login post
-  login(req, res, next) {
-
-    var jsonReturn = {
-      your_params: [],
-      your_files: [],
-      your_error: []
-    };
-
+  //register post
+  register(req, res, next) {
     const form = new formidable.IncomingForm();
 
     form.parse(req, function (err, fields, files) {
+      let isOKAll = true;
       let username = '';
       let password = '';
 
@@ -67,58 +61,172 @@ class HandlerGenerator {
         for (let key in fields) {
           if (key = 'username') username = fields[key];
           if (key = 'password') password = fields[key];
-          jsonReturn.your_params.push({
-            name: key,
-            value: fields[key]
-          });
         }
       }
-      let decryptedPass ='';
-      try{
-        //console.log(password);
-        decryptedPass = MidlewareRSA.decrypt(password,'utf8');
-        //console.log(decryptedPass);
-      }catch(err){
-        //console.log(err);
+      let decryptedPassSign ='';
+      if (username&&password){
+        username = username.toUpperCase();
+        try{
+          decryptedPassSign = MidlewareRSA.decrypt(password,'utf8');
+          decryptedPassSign = MidlewareRSA.sign(JSON.stringify({
+            username:username,
+            password: decryptedPassSign
+          }), 'base64');
+        }catch(err){
+          isOKAll = fasle;
+        }
+      }else{
+        isOKAll = false;
       }
 
+      //chu ky user name va pass ghi vao csdl
+      //user la uppercase + clearpass
+      // console.log('decryptedPassSign:');
+      // console.log(decryptedPassSign);
+      //cuongdq,123
+      //MB5poYdYTl1yH6AIVK+IwGH1Rg9iE80SBh6uEpqfVHMDfykBOo/WbwPLAn0HJkw455enNZPGUgHEFbgNN7Cxgg==
       
+      //goi database ghi nhan user
+      var userInfo={
+        username: username,
+        password: decryptedPassSign,
+        nickname:'cuong.dq',
+        fullname:'Đoàn Quốc Cường',
+        urlImage:'http://abc.jsp/anhcanhan.jsp',
+        name: 'PHONE',
+        phone:'903500888',
+        email:'cuongdq350088@gmail.com',
+        address:'Admin đây mà',
+        ip: '10.12',
+        token:'xyz'
+        }
 
-      let mockedUsername = 'admin';
-      let mockedPassword = 'password';
-
-      if (username && decryptedPass) {
-        if (username === mockedUsername && decryptedPass === mockedPassword) {
-
-          let token = jwt.sign({
-            username: username,
-            req_url: req.url,
-            req_method: req.method,
-            req_time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-          },
-            config.secret,
-            {
-              expiresIn: '24h' // expires in 24 hours
-            }
-          );
-
+      if (isOKAll){
+        databaseService.HandleDatabase.createUser(userInfo)
+        .then(data=>{
+          //console.log(data);
+          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
           res.end(JSON.stringify({
             success: true,
-            message: 'Authentication successful!',
-            token: token
+            message: 'Đã đăng ký thành công!',
+            username: username,
+            token: decryptedPassSign
           }));
-        } else {
+        })
+        .catch(err=>{
+          res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
           res.end(JSON.stringify({
             success: false,
-            message: 'Incorrect username or password'
+            message: 'Đăng ký không thành công đâu nhé',
+            error:err
           }));
-        }
-      } else {
+        });
+      }else{
+        res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
+          res.end(JSON.stringify({
+            success: false,
+            message: 'Lỗi truyền số liệu không đúng'
+          }));
+      }
+    });
+    
+  }
 
-        res.end(JSON.stringify({
-          success: false,
-          message: 'Authentication failed! Please check the request'
-        }));
+  //login post
+  login(req, res, next) {
+
+    const form = new formidable.IncomingForm();
+
+    form.parse(req, function (err, fields, files) {
+
+      let isOKAll = true;
+      let username = '';
+      let password = '';
+      if (err) {
+        next();
+      } else {
+        for (let key in fields) {
+          if (key = 'username') username = fields[key];
+          if (key = 'password') password = fields[key];
+        }
+      }
+
+      let decryptedPassSign ='';
+      if (username&&password){
+        username = username.toUpperCase();
+        try{
+          decryptedPassSign = MidlewareRSA.decrypt(password,'utf8');
+          decryptedPassSign = MidlewareRSA.sign(JSON.stringify({
+            username:username,
+            password: decryptedPassSign
+          }), 'base64');
+        }catch(err){
+          isOKAll = fasle;
+        }
+      }else{
+        isOKAll = false;
+      }
+
+      var userInfo={
+        username: username,
+        password: decryptedPassSign
+        }
+
+      if (isOKAll){
+          databaseService.HandleDatabase.checkUser(userInfo)
+          .then(userInfo=>{
+            if (userInfo){
+              //thuc hien cac noi dung jwt
+              let token = jwt.sign({
+                username: userInfo.USERNAME,
+                nickname: userInfo.DISPLAY_NAME,
+                fullname: userInfo.FULL_NAME,
+                phone: userInfo.PHONE,
+                email: userInfo.EMAIL,
+                address: userInfo.FULL_ADDRESS,
+                last_ip: userInfo.LAST_IP,
+                req_url: req.url,
+                req_method: req.method,
+                req_ip: req.ip,
+                req_device: req.headers["user-agent"], //device,ip,platform
+                certificate: decryptedPassSign, //chuoi bao mat lop 2 //khi can verify 
+                req_time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+              },
+                config.secret,
+                {
+                  expiresIn: '24h' // expires in 24 hours
+                }
+              );
+    
+              res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
+              res.end(JSON.stringify({
+                success: true,
+                message: 'Chúc mừng bạn đã login thành công! Hãy sử dụng thẻ truy cập để yêu cầu dữ liệu của chúng tôi trong 24h tới!',
+                token: token
+              }));
+            }else{
+              res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
+              res.end(JSON.stringify({
+                success: false,
+                message: 'Kiểm tra lại User/pass nhé!'
+              }));
+            }
+          })
+          .catch(err=>{
+            res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
+            res.end(JSON.stringify({
+              success: false,
+              message: 'Login không thành công-do lỗi query!',
+              error:err
+            }));
+          });
+
+      }else{
+        res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
+          res.end(JSON.stringify({
+            success: false,
+            message: 'Lỗi truyền số liệu không đúng!'
+          }));
       }
     })
   }

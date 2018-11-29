@@ -70,28 +70,25 @@ class AppDAO {
     let sql = 'INSERT INTO ' + insertTable.name
       + ' ('
     let i = 0;
-    for (let col of insertTable.cols) {
-      if (i++ == 0) {
-        sql += col.name;
-      } else {
-        sql += ', ' + col.name;
-      }
-    }
-    sql += ') VALUES (';
-
-    i = 0;
-    for (let col of insertTable.cols) {
-      if (i++ == 0) {
-        sql += '?';
-      } else {
-        sql += ', ?';
-      }
-    }
-    sql += ')';
+    let sqlNames='';
+    let sqlValues='';
     let params = [];
     for (let col of insertTable.cols) {
-      params.push(col.value);
+      if (col.value){
+        params.push(col.value);
+        if (i++ == 0) {
+          sqlNames += col.name;
+          sqlValues += '?';
+        } else {
+          sqlNames += ', ' + col.name;
+          sqlValues += ', ?';
+        }
+      }
     }
+
+    sql += sqlNames + ') VALUES (';
+    sql += sqlValues + ')';
+
     return this.runSql(sql, params);
   }
 
@@ -113,29 +110,33 @@ class AppDAO {
    */
   update(updateTable) {
     let sql = 'UPDATE ' + updateTable.name + ' SET ';
+   
     let i = 0;
+    let params = [];
     for (let col of updateTable.cols) {
-      if (i++ == 0) {
-        sql += col.name + '= ?';
-      } else {
-        sql += ', ' + col.name + '= ?';
+      if (col.value){
+        //neu gia tri khong phai undefined moi duoc thuc thi
+        params.push(col.value);
+        if (i++ == 0) {
+          sql += col.name + '= ?';
+        } else {
+          sql += ', ' + col.name + '= ?';
+        }
       }
     }
 
     i = 0;
     for (let col of updateTable.wheres) {
-      if (i++ == 0) {
-        sql += ' WHERE ' + col.name + '= ?';
-      } else {
-        sql += ' AND ' + col.name + '= ?';
+      if (col.value){
+        params.push(col.value);
+        if (i++ == 0) {
+          sql += ' WHERE ' + col.name + '= ?';
+        } else {
+          sql += ' AND ' + col.name + '= ?';
+        }
+      }else{
+        sql += ' WHERE 1=2'; //menh de where sai thi khong cho update Bao toan du lieu
       }
-    }
-    let params = [];
-    for (let col of updateTable.cols) {
-      params.push(col.value);
-    }
-    for (let col of updateTable.wheres) {
-      params.push(col.value);
     }
     return this.runSql(sql, params)
   }
@@ -148,20 +149,55 @@ class AppDAO {
   delete(deleteTable) {
     let sql = 'DELETE FROM ' + deleteTable.name;
     let i = 0;
-    for (let col of deleteTable.wheres) {
-      if (i++ == 0) {
-        sql += ' WHERE ' + col.name + '= ?';
-      } else {
-        sql += ' AND ' + col.name + '= ?';
-      }
-    }
     let params = [];
     for (let col of deleteTable.wheres) {
-      params.push(col.value);
+      if (col.value){
+        params.push(col.value);
+        if (i++ == 0) {
+          sql += ' WHERE ' + col.name + '= ?';
+        } else {
+          sql += ' AND ' + col.name + '= ?';
+        }
+      }else{
+        sql += ' WHERE 1=2'; //dam bao khong bi xoa toan bo so lieu khi khai bao sai
+      }
     }
     return this.runSql(sql, params)
   }
 
+  //
+  /**
+   *lenh select, update, delete su dung keu json 
+   * @param {*} selectTable 
+   */
+  select(selectTable) {
+    let sql = 'SELECT * FROM ' + selectTable.name;
+    let i = 0;
+    let params = [];
+    let sqlNames='';
+    for (let col of selectTable.cols) {
+        if (i++ == 0) {
+          sqlNames += col.name;
+        } else {
+          sqlNames += ', ' + col.name;
+        }
+    }
+    sql = 'SELECT '+sqlNames+' FROM ' + selectTable.name;
+    i = 0;
+    for (let col of selectTable.wheres) {
+      if (col.value){
+        params.push(col.value);
+        if (i++ == 0) {
+          sql += ' WHERE ' + col.name + '= ?';
+        } else {
+          sql += ' AND ' + col.name + '= ?';
+        }
+      }
+    }
+    //console.log(sql);
+    //console.log(params);
+    return this.getRst(sql, params)
+  }
   //lay 1 bang ghi dau tien cua select
   /**
    * lay 1 bang ghi

@@ -69,10 +69,34 @@ class HandleDatabase {
                     description: 'Số điện thoại được cung cấp bởi người dùng hoặc lấy từ mạng xã hội'
                 },
                 {
+                    name: 'PHONE_OTP',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Mã xác nhận OTP của user'
+                },
+                {
+                    name: 'PHONE_OTP_ACTIVE',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Trạng thái đã xác nhận mã OTP qua điện thoại xong, số điện thoại đã được xác minh'
+                },
+                {
                     name: 'EMAIL',
                     type: dataType.text,
                     option_key: '',
                     description: 'Địa chỉ email của người dùng hệ thống hoặc mạng xã hội'
+                },
+                {
+                    name: 'EMAIL_OTP',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Mã OTP để xác thực email khi người dùng comfirm'
+                },
+                {
+                    name: 'EMAIL_OTP_ACTIVE',
+                    type: dataType.numeric,
+                    option_key: '',
+                    description: 'Trạng thái đã xác thực OTP email chứng thực người dùng khai báo email đúng'
                 },
                 {
                     name: 'FULL_ADDRESS',
@@ -500,164 +524,202 @@ class HandleDatabase {
 
     createUser(userInfo){
         //gui lenh vao de tao user trong csdl
+        //thu xem da kho tao lay duoc key public chua
+        //console.log(RSAKeyRow);
         //password thi hash duoi dang certificate tuc la sign
-        var userInfo ={
+        var userInfoSQL ={
             name: 'LOCAL_USERS',
             cols: [
                 {
                     name: 'USERNAME',
-                    value: '',
-                    type: dataType.text,
-                    option_key: 'NOT NULL',
-                    description: 'Username của hệ thống cung cấp duy nhất sử dụng điện thoại hoặc email'
+                    value: userInfo.username
                 },
                 {
                     name: 'PASSWORD',
-                    value: '',
-                    type: dataType.text,
-                    option_key: 'NOT NULL',
-                    description: 'Mật khẩu người dùng local được mã hóa dưới dạng certificate'
-                },
-                {
-                    name: 'SOCIAL_USER_ID',
-                    value: '',
-                    type: dataType.integer,
-                    option_key: '',
-                    description: 'Mã ID của User Nếu liên kết từ mạng xã hội'
+                    value: userInfo.password
                 },
                 {
                     name: 'DISPLAY_NAME',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'displayName Tên hiển thị của người dùng trên mạng xã hội'
+                    value: userInfo.nickname
                 },
                 {
                     name: 'URL_IMAGE',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'Đường dẫn url ảnh đại diện'
+                    value: userInfo.urlImage
                 },
                 {
                     name: 'FULL_NAME',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'Họ và tên quản lý đầy đủ của hệ thống riêng'
+                    value: userInfo.fullname
                 },
                 {
                     name: 'PHONE',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'Số điện thoại được cung cấp bởi người dùng hoặc lấy từ mạng xã hội'
+                    value: userInfo.phone
                 },
                 {
                     name: 'EMAIL',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'Địa chỉ email của người dùng hệ thống hoặc mạng xã hội'
+                    value: userInfo.email
                 },
                 {
                     name: 'FULL_ADDRESS',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'Địa chỉ quản lý đầy đủ của hệ thống riêng'
-                },
-                {
-                    name: 'ROLES',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'Vai trò của người dùng trong hệ thống này'
-                },
-                {
-                    name: 'COUNT_IP',
-                    value: '',
-                    type: dataType.integer,
-                    option_key: 'default 0',
-                    description: 'Số lượng IP mà user này sử dụng danh sách được quản lý bằng bản chi tiết'
+                    value: userInfo.address
                 },
                 {
                     name: 'LAST_IP',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'Địa chỉ ip cuối truy cập hệ thống'
-                },
-                {
-                    name: 'LAST_ACCESS_TIME',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'Thời gian truy cập cuối hệ thống'
-                },
-                {
-                    name: 'LAST_ACCESS_URL',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'Link truy cập cuối cùng dùng để trỏ về kết quả gần nhất cho họ'
-                },
-                {
-                    name: 'LAST_STATUS',
-                    value: '',
-                    type: dataType.numeric,
-                    option_key: 'default 0',
-                    description: 'Trạng thái truy cập lần gần nhất 0, 1, 2, 3'
-                },
-                {
-                    name: 'COUNT_ACCESS',
-                    value: '',
-                    type: dataType.numeric,
-                    option_key: 'default 0',
-                    description: 'Số lượt truy cập hệ thống này'
+                    value: userInfo.ip
                 },
                 {
                     name: 'TOKEN_ID',
-                    value: '',
-                    type: dataType.text,
-                    option_key: '',
-                    description: 'Mã Token truy cập hệ thống duy trì'
-                },
-                {
-                    name: 'IS_ACTIVE',
-                    value: '',
-                    type: dataType.numeric,
-                    option_key: 'default 1, unique(USERNAME)',
-                    description: 'Quyền truy cập hệ thống, =0 là bị block không cho truy cập'
+                    value: userInfo.token
                 }
             ]
         };
 
-    db.insert(userInfo)
+    return db.insert(userInfoSQL)
       .then(data => {
-        if (!isSilence) console.log(data)
+        if (!isSilence) console.log(data);
+        return data;
         }
-      )
+      )/* 
       .catch(err=>{
-          if (!isSilence) console.log(data)
-      });
-
+          if (!isSilence) console.log(err);
+        return err;
+      }) */;
     }
     
     updateUser(userInfo){
         //Lay thong tin cua user update theo tung thong tin cua no
         //password thi hash duoi dang certificate tuc la sign
+        var userInfo={
+            username:'cuongdq',
+            password:'123',
+            nickname:'cuong.dq',
+            fullname:'Đoàn Quốc Cường',
+            urlImage:'http://abc.jsp/anhcanhan.jsp',
+            name: 'PHONE',
+            phone:'903500888',
+            email:'cuongdq350088@gmail.com',
+            address:'Admin đây mà',
+            ip: '10.12',
+            token:'xyz'
+        }
+        //password thi hash duoi dang certificate tuc la sign
+        var userInfoSQL ={
+            name: 'LOCAL_USERS',
+            cols: [
+                {
+                    name: 'PASSWORD',
+                    value: userInfo.password
+                },
+                {
+                    name: 'DISPLAY_NAME',
+                    value: userInfo.nickname
+                },
+                {
+                    name: 'URL_IMAGE',
+                    value: userInfo.urlImage
+                },
+                {
+                    name: 'FULL_NAME',
+                    value: userInfo.fullname
+                },
+                {
+                    name: 'PHONE',
+                    value: userInfo.phone
+                },
+                {
+                    name: 'EMAIL',
+                    value: userInfo.email
+                },
+                {
+                    name: 'FULL_ADDRESS',
+                    value: userInfo.address
+                },
+                {
+                    name: 'LAST_IP',
+                    value: userInfo.ip
+                },
+                {
+                    name: 'TOKEN_ID',
+                    value: userInfo.token
+                }
+            ],
+            wheres: [
+                {
+                    name: 'USERNAME',
+                    value: userInfo.username
+                }
+                    ]
+        };
+
+        return db.update(userInfoSQL)
+        .then(data => {
+                if (!isSilence) console.log(data);
+                return data;
+        }
+        )
+        .catch(err=>{
+            if (!isSilence) console.log(err);
+            return err;
+        });
     }
 
     comfirmUser(userInfo){
-        //thong tin nguoi dung nhap vao OTP de xac thuc
-        //kiem tra ma xac thuc ok thi cho qua danh dau active
+        //xac nhan OTP thong tin gui ve user kiem tra OTP
+        //
     }
 
     checkUser(userInfo){
-        //kiem tra trong csdl da co user hay khong
-        //mat khau sau khi hash co trung voi mat khau luu khong?
-        //tra ve quyen han va thong tin cua user OBJECT
+        //password thi hash duoi dang certificate tuc la sign
+        var userInfoSQL ={
+            name: 'LOCAL_USERS',
+            cols: [
+                {
+                    name: 'USERNAME'
+                },
+                {
+                    name: 'DISPLAY_NAME'
+                },
+                {
+                    name: 'URL_IMAGE'
+                },
+                {
+                    name: 'FULL_NAME'
+                },
+                {
+                    name: 'PHONE'
+                },
+                {
+                    name: 'EMAIL'
+                },
+                {
+                    name: 'FULL_ADDRESS'
+                },
+                {
+                    name: 'LAST_IP'
+                },
+                {
+                    name: 'TOKEN_ID'
+                }
+            ],
+            wheres: [
+                {
+                    name: 'USERNAME',
+                    value: userInfo.username
+                },
+                {
+                    name: 'PASSWORD',
+                    value: userInfo.password
+                }
+                    ]
+        };
+
+        return db.select(userInfoSQL)
+        .then(data => {
+            if (!isSilence) console.log(data)
+            // console.log('data');
+            // console.log(data);
+            return data;
+        }
+        );
     }
 
 }

@@ -1,16 +1,14 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
-import { RegisterPage } from '../register/register';
 import { ApiService } from '../../services/apiService';
-
 import NodeRSA from 'node-rsa';
 
 @Component({
-  selector: 'page-home',
-  templateUrl: 'home.html'
+  selector: 'page-register',
+  templateUrl: 'register.html'
 })
-export class HomePage {
+export class RegisterPage {
 
   public myFromGroup: FormGroup;
   public isImageViewer: boolean = false;
@@ -22,14 +20,10 @@ export class HomePage {
     private apiService: ApiService) { }
 
   ngOnInit() {
-    /* this.apiService.testEncryptDecrypt();
-    this.apiService.testSignVerify(); */
     this.apiService.getServerKey()
     .then(pk=>{
-      //console.log(pk);
       try{
         this.serverKey.importKey(pk);
-        //console.log(this.serverKey);
       }catch(err){
         console.log(err);
       }
@@ -57,14 +51,9 @@ export class HomePage {
     formData.append("password",passEncrypted);
     
     //gui lenh login 
-    this.apiService.postLogin(formData)
+    this.apiService.postRegister(formData)
     .then(data=>console.log(data))
     .catch(err=>console.log(err));
     
-  }
-
-  callRegister(){
-    //console.log("goi dang ky")
-    this.navCtrl.push(RegisterPage);
   }
 }
