@@ -159,7 +159,7 @@ class HandleDatabase {
                     name: 'PASSWORD',
                     type: dataType.text,
                     option_key: 'NOT NULL',
-                    description: 'Mật khẩu người dùng local được mã hóa'
+                    description: 'Mật khẩu người dùng local được mã hóa dưới dạng certificate'
                 },
                 {
                     name: 'SOCIAL_USER_ID',
@@ -457,8 +457,8 @@ class HandleDatabase {
 
     //getKey de su dung dich vu
     createServiceKey(service_id){
-        var serviceKey = (service_id)?service_id:config.service_key;
-        return db.getRst("select * from SERVER_KEYS where SERVICE_ID='"+serviceKey+"'")
+        var serviceKeyId = (service_id)?service_id:config.service_key;
+        return db.getRst("select * from SERVER_KEYS where SERVICE_ID='"+serviceKeyId+"'")
         .then(row=>{
             if (row){
                 //console.log('Lay tu csdl:');
@@ -469,7 +469,7 @@ class HandleDatabase {
                 cols:[
                         {
                         name:'SERVICE_ID',
-                        value: serviceKey
+                        value: serviceKeyId
                         },
                         {
                         name:'PRIVATE_KEY',
@@ -489,7 +489,7 @@ class HandleDatabase {
                     if (!isSilence) console.log(data)
                 });
                 //console.log('Lay tu khoi tao moi');
-                return { SERVICE_ID: serviceKey,
+                return { SERVICE_ID: serviceKeyId,
                          PRIVATE_KEY: key.exportKey('private'),
                          PUBLIC_KEY: key.exportKey('public'),
                          SERVICE_NAME: 'Khóa của dịch vụ web c3',
@@ -497,6 +497,169 @@ class HandleDatabase {
             }
         })
     }
+
+    createUser(userInfo){
+        //gui lenh vao de tao user trong csdl
+        //password thi hash duoi dang certificate tuc la sign
+        var userInfo ={
+            name: 'LOCAL_USERS',
+            cols: [
+                {
+                    name: 'USERNAME',
+                    value: '',
+                    type: dataType.text,
+                    option_key: 'NOT NULL',
+                    description: 'Username của hệ thống cung cấp duy nhất sử dụng điện thoại hoặc email'
+                },
+                {
+                    name: 'PASSWORD',
+                    value: '',
+                    type: dataType.text,
+                    option_key: 'NOT NULL',
+                    description: 'Mật khẩu người dùng local được mã hóa dưới dạng certificate'
+                },
+                {
+                    name: 'SOCIAL_USER_ID',
+                    value: '',
+                    type: dataType.integer,
+                    option_key: '',
+                    description: 'Mã ID của User Nếu liên kết từ mạng xã hội'
+                },
+                {
+                    name: 'DISPLAY_NAME',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'displayName Tên hiển thị của người dùng trên mạng xã hội'
+                },
+                {
+                    name: 'URL_IMAGE',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Đường dẫn url ảnh đại diện'
+                },
+                {
+                    name: 'FULL_NAME',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Họ và tên quản lý đầy đủ của hệ thống riêng'
+                },
+                {
+                    name: 'PHONE',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Số điện thoại được cung cấp bởi người dùng hoặc lấy từ mạng xã hội'
+                },
+                {
+                    name: 'EMAIL',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Địa chỉ email của người dùng hệ thống hoặc mạng xã hội'
+                },
+                {
+                    name: 'FULL_ADDRESS',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Địa chỉ quản lý đầy đủ của hệ thống riêng'
+                },
+                {
+                    name: 'ROLES',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Vai trò của người dùng trong hệ thống này'
+                },
+                {
+                    name: 'COUNT_IP',
+                    value: '',
+                    type: dataType.integer,
+                    option_key: 'default 0',
+                    description: 'Số lượng IP mà user này sử dụng danh sách được quản lý bằng bản chi tiết'
+                },
+                {
+                    name: 'LAST_IP',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Địa chỉ ip cuối truy cập hệ thống'
+                },
+                {
+                    name: 'LAST_ACCESS_TIME',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Thời gian truy cập cuối hệ thống'
+                },
+                {
+                    name: 'LAST_ACCESS_URL',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Link truy cập cuối cùng dùng để trỏ về kết quả gần nhất cho họ'
+                },
+                {
+                    name: 'LAST_STATUS',
+                    value: '',
+                    type: dataType.numeric,
+                    option_key: 'default 0',
+                    description: 'Trạng thái truy cập lần gần nhất 0, 1, 2, 3'
+                },
+                {
+                    name: 'COUNT_ACCESS',
+                    value: '',
+                    type: dataType.numeric,
+                    option_key: 'default 0',
+                    description: 'Số lượt truy cập hệ thống này'
+                },
+                {
+                    name: 'TOKEN_ID',
+                    value: '',
+                    type: dataType.text,
+                    option_key: '',
+                    description: 'Mã Token truy cập hệ thống duy trì'
+                },
+                {
+                    name: 'IS_ACTIVE',
+                    value: '',
+                    type: dataType.numeric,
+                    option_key: 'default 1, unique(USERNAME)',
+                    description: 'Quyền truy cập hệ thống, =0 là bị block không cho truy cập'
+                }
+            ]
+        };
+
+    db.insert(userInfo)
+      .then(data => {
+        if (!isSilence) console.log(data)
+        }
+      )
+      .catch(err=>{
+          if (!isSilence) console.log(data)
+      });
+
+    }
+    
+    updateUser(userInfo){
+        //Lay thong tin cua user update theo tung thong tin cua no
+        //password thi hash duoi dang certificate tuc la sign
+    }
+
+    comfirmUser(userInfo){
+        //thong tin nguoi dung nhap vao OTP de xac thuc
+        //kiem tra ma xac thuc ok thi cho qua danh dau active
+    }
+
+    checkUser(userInfo){
+        //kiem tra trong csdl da co user hay khong
+        //mat khau sau khi hash co trung voi mat khau luu khong?
+        //tra ve quyen han va thong tin cua user OBJECT
+    }
+
 }
 
 module.exports = {

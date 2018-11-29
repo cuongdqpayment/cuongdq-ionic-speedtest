@@ -17,6 +17,10 @@ function main(isHttp, isHttps) {
   
   //khoi tao trung gian xu ly dieu khien tao token, database
   let handlers = middleware.HandlerGenerator;
+  //khoi tao lay bien public su dung sau
+  handlers.init();
+  //OK cuong.dq
+  
   //luu log truy cap
   app.use(handlers.logAccess);
 
@@ -34,6 +38,9 @@ function main(isHttp, isHttps) {
 
   //Tra khoa public cho client
   app.get('/key-json', handlers.getPublickeyJson);
+
+  //Tra bo khoa RSA cho admin xu ly, chi co quyen admin moi su dung duoc
+  app.get('/admin-json', handlers.checkRoles, handlers.getRSAKeyObj);
 
   // Routes & Handlers
   app.post('/login', handlers.login);

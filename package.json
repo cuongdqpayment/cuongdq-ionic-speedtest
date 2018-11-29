@@ -23,7 +23,6 @@
     "@ionic-native/core": "~4.17.0",
     "@ionic-native/splash-screen": "~4.17.0",
     "@ionic-native/status-bar": "~4.17.0",
-    "@ionic/app-scripts": "3.2.0",
     "@ionic/storage": "2.2.0",
     "bluebird": "^3.5.3",
     "body-parser": "^1.18.3",
@@ -57,7 +56,9 @@
     "url": "^0.11.0",
     "zone.js": "0.8.26"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@ionic/app-scripts": "3.2.0"
+  },
   "description": "An Cuongdq Project",
   "cordova": {
     "plugins": {

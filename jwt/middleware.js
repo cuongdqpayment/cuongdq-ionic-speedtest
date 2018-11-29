@@ -8,6 +8,13 @@ const databaseService = require('../db/database-service');
 //tao bang du lieu luu tru
 databaseService.HandleDatabase.init();
 
+
+//khoa RSA su dung cho MidleWare:
+//su dung de import key chinh vao verify, sign, decrypted va encrytped
+const NodeRSA = require('node-rsa');
+const MidlewareRSA = new NodeRSA(null,{ signingScheme: 'pkcs1-sha256' });
+
+
 let checkToken = (req, res, next) => {
   let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
 
@@ -37,35 +44,8 @@ let checkToken = (req, res, next) => {
   }
 };
 
-var RSAKey;
+var RSAKeyObj; //bien public de su dung
 class HandlerGenerator {
-
-   getRSAKey(){
-     console.log(RSAKey);
-   }
-   
-   getPublickeyJson(req, res, next) {
-    
-    getRSAKey();
-    
-    //tra cho client khoa public qua json
-    databaseService.HandleDatabase.
-    createServiceKey(databaseService.service_id)
-    .then(serverkey=>{
-      //gan vao de su dung lay lai lan sau nhe
-      RSAKey = serverkey;
-      console.log(RSAKey); 
-
-      res.writeHead(200, { 'Content-Type': 'application/json'});
-      res.end(JSON.stringify({
-        SERVICE_ID: serverkey.SERVICE_ID,
-        PUBLIC_KEY: serverkey.PUBLIC_KEY,
-        SERVICE_NAME: serverkey.SERVICE_NAME,
-        IS_ACTIVE: serverkey.IS_ACTIVE
-      }));
-    })
-  }
-
   //login post
   login(req, res, next) {
 
@@ -93,15 +73,22 @@ class HandlerGenerator {
           });
         }
       }
+      let decryptedPass ='';
+      try{
+        //console.log(password);
+        decryptedPass = MidlewareRSA.decrypt(password,'utf8');
+        //console.log(decryptedPass);
+      }catch(err){
+        //console.log(err);
+      }
 
-      //giai ma private key
-      let decryptedPass = password;
+      
 
       let mockedUsername = 'admin';
       let mockedPassword = 'password';
 
-      if (username && password) {
-        if (username === mockedUsername && password === mockedPassword) {
+      if (username && decryptedPass) {
+        if (username === mockedUsername && decryptedPass === mockedPassword) {
 
           let token = jwt.sign({
             username: username,
@@ -151,6 +138,54 @@ class HandlerGenerator {
 
   errorProcess(err, req, res, next) {
     res.end(JSON.stringify(err))
+  }
+
+
+  // khoi tao lay bien public 
+  init(){
+    databaseService.HandleDatabase.
+    createServiceKey(databaseService.service_id)
+    .then(serverkey=>{
+      //gan vao de su dung lay lai lan sau nhe
+      RSAKeyObj = serverkey;
+      MidlewareRSA.importKey(serverkey.PRIVATE_KEY);
+    }).catch(err=>console.log(err))
+   }
+
+   checkRoles(req, res, next){
+     //thay các quyền kiểm tra tại điều kiện kiểm tra nhé
+     //*********/
+    if (RSAKeyObj){
+      //doi tuong su dung de encrypte, sign, decrypt, verify dung privatekey
+      console.log(MidlewareRSA);
+      next();
+    }else{
+      res.writeHead(403, { 'Content-Type': 'application/json'});
+      res.end(JSON.stringify({status:'NOK',message:'Bạn không có quyền vào hệ thống'}));
+    }
+   }
+
+   getRSAKeyObj(req, res, next){
+      res.writeHead(200, { 'Content-Type': 'application/json'});
+      res.end(JSON.stringify(RSAKeyObj));
+   }
+   
+   getPublickeyJson(req, res, next) {
+    databaseService.HandleDatabase.
+    createServiceKey(databaseService.service_id)
+    .then(serverkey=>{
+      //gan vao de su dung lay lai lan sau nhe
+      RSAKeyObj = serverkey;
+      MidlewareRSA.importKey(serverkey.PRIVATE_KEY);
+      //console.log(RSAKeyObj); 
+      res.writeHead(200, { 'Content-Type': 'application/json'});
+      res.end(JSON.stringify({
+        SERVICE_ID: serverkey.SERVICE_ID,
+        PUBLIC_KEY: serverkey.PUBLIC_KEY,
+        SERVICE_NAME: serverkey.SERVICE_NAME,
+        IS_ACTIVE: serverkey.IS_ACTIVE
+      }));
+    })
   }
 
   cors(req, res, next){

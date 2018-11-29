@@ -11,7 +11,8 @@ export class ApiService {
   public clientKey = new NodeRSA({ b: 512 }, { signingScheme: 'pkcs1-sha256' }); //for decrypte
   public midleKey =  new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for test
   public serverKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for crypte
-  
+  public publicKey:any;
+
   constructor(public httpClient: HttpClient, public sanitizer: DomSanitizer) {
     //key nay de test thu noi bo
     this.midleKey.importKey(this.clientKey.exportKey('public'));
@@ -59,7 +60,11 @@ export class ApiService {
   getServerKey(){
       return this.httpClient.get('http://localhost:9235/key-json')
              .toPromise()
-             .then(jsonData => jsonData.PUBLIC_KEY);
+             .then(jsonData => {
+              this.publicKey = jsonData;
+              //su dung bien any dia phuong moi het loi
+              return this.publicKey.PUBLIC_KEY;
+             });
   }
 
   postLogin(formData){

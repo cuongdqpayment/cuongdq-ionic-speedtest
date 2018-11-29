@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { ApiService } from '../../services/apiService';
 import NodeRSA from 'node-rsa';
 
@@ -18,17 +17,22 @@ export class HomePage {
   
   constructor(public navCtrl: NavController,
     private formBuilder: FormBuilder,
-    private apiService: ApiService,
-    private httpClient: HttpClient) { }
+    private apiService: ApiService) { }
 
   ngOnInit() {
     /* this.apiService.testEncryptDecrypt();
     this.apiService.testSignVerify(); */
     this.apiService.getServerKey()
     .then(pk=>{
-      this.serverKey.importKey(pk);
-      //console.log(this.serverKey);
-    });
+      //console.log(pk);
+      try{
+        this.serverKey.importKey(pk);
+        //console.log(this.serverKey);
+      }catch(err){
+        console.log(err);
+      }
+    })
+    .catch(err=>console.log(err));
     
 
     this.myFromGroup = this.formBuilder.group({
@@ -39,7 +43,12 @@ export class HomePage {
 
   onSubmit() {
     //ma hoa du lieu truoc khi truyen di
-    var passEncrypted= this.serverKey.encrypt(this.myFromGroup.get('pass').value, 'base64', 'utf8');
+    var passEncrypted='';
+    try{
+      passEncrypted = this.serverKey.encrypt(this.myFromGroup.get('pass').value, 'base64', 'utf8');
+    }catch(err){
+      console.log(err);
+    }
 
     var formData: FormData = new FormData();
     formData.append("username",this.myFromGroup.get('user').value);
@@ -47,7 +56,8 @@ export class HomePage {
     
     //gui lenh login 
     this.apiService.postLogin(formData)
-    .then(data=>console.log(data));
+    .then(data=>console.log(data))
+    .catch(err=>console.log(err));
     
   }
 }
