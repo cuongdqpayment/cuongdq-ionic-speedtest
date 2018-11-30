@@ -1,4 +1,5 @@
 const express = require('express');
+//const bodyParser = require('body-parser');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
@@ -33,6 +34,9 @@ function main(isHttp, isHttps) {
   handlers.init();
   //OK cuong.dq
   
+  //chuyen doi du lieu json dau vao thanh req.body la doi tuong chua json
+  //app.use(bodyParser.json());
+
   //luu log truy cap
   app.use(handlers.logAccess);
 
@@ -47,7 +51,6 @@ function main(isHttp, isHttps) {
   //1.dang ky duong dan tuyet doi co dinh cho ionic
   app.use(express.static(__dirname + '/www'));
 
-
   //Tra khoa public cho client
   app.get('/key-json', handlers.getPublickeyJson);
 
@@ -59,9 +62,18 @@ function main(isHttp, isHttps) {
 
   //Register user gửi lên form đăng ký
   app.post('/register', handlers.register);
+  //luu du lieu xuong database
+  app.post('/user/save',handlers.tokenPostFormCheck, handlers.getRandomUser);
   //kiem tra token hop le hay khong, neu khong hop le thi tra ve trang chu
   //neu hop le thi tra ket qua ve
-  app.get('/api', middleware.checkToken, handlers.getRandomUser);
+  app.post('/api', handlers.tokenPostCheck, handlers.getRandomUser);
+  app.post('/api/user-settings', handlers.tokenPostCheck, middleware.db.HandleDatabase.getUserInfo);
+
+  
+  app.get('/api', handlers.tokenGetCheck, handlers.getRandomUser);
+  app.get('/api/user-settings', handlers.tokenGetCheck, middleware.db.HandleDatabase.getUserInfo);
+
+
 
   //de truyen csdl vao doi tuong nao viet ham nhu sau
   /* app.use((res,res,next)=>{

@@ -667,6 +667,7 @@ class HandleDatabase {
         //
     }
 
+    //verify user&pass for login
     checkUser(userInfo){
         //password thi hash duoi dang certificate tuc la sign
         var userInfoSQL ={
@@ -720,6 +721,64 @@ class HandleDatabase {
             return data;
         }
         );
+    }
+    //get userInfo sau khi da verify quyen
+    getUserInfo(req, res, next){
+        if (req.user&&req.user.username){
+            //console.log(req.user);
+            var userInfoSQL ={
+                name: 'LOCAL_USERS',
+                cols: [
+                    {
+                        name: 'USERNAME'
+                    },
+                    {
+                        name: 'DISPLAY_NAME'
+                    },
+                    {
+                        name: 'URL_IMAGE'
+                    },
+                    {
+                        name: 'FULL_NAME'
+                    },
+                    {
+                        name: 'PHONE'
+                    },
+                    {
+                        name: 'EMAIL'
+                    },
+                    {
+                        name: 'FULL_ADDRESS'
+                    },
+                    {
+                        name: 'LAST_IP'
+                    },
+                    {
+                        name: 'TOKEN_ID'
+                    }
+                ],
+                wheres: [
+                    {
+                        name: 'USERNAME',
+                        value: req.user.username
+                    }
+                        ]
+            };
+    
+            db.select(userInfoSQL)
+            .then(data => {
+                if (!isSilence) console.log(data);
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify(data));
+            })
+            .catch(err=>{
+                res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify(err));
+            });
+        }else{
+            res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({message:"No User Info!"}));
+        }
     }
 
 }

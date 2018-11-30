@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ApiService } from '../../services/apiService';
-import NodeRSA from 'node-rsa';
 
 @Component({
   selector: 'page-register',
@@ -13,7 +12,7 @@ export class RegisterPage {
   public myFromGroup: FormGroup;
   public isImageViewer: boolean = false;
   public resourceImages: {imageViewer: any,file:any, name: string }[] = [];
-  public serverKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' });
+  public serverKey:any;
   
   constructor(public navCtrl: NavController,
     private formBuilder: FormBuilder,
@@ -21,15 +20,8 @@ export class RegisterPage {
 
   ngOnInit() {
     this.apiService.getServerKey()
-    .then(pk=>{
-      try{
-        this.serverKey.importKey(pk);
-      }catch(err){
-        console.log(err);
-      }
-    })
+    .then(pk=>this.serverKey=pk)
     .catch(err=>console.log(err));
-    
 
     this.myFromGroup = this.formBuilder.group({
       user: 'admin',

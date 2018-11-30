@@ -1,6 +1,13 @@
 const jwt = require('jsonwebtoken');
 const config = require('./config.js');
 const formidable = require('formidable');
+const fs = require('fs');
+const systempath = require('path');
+const dirUpload = 'upload_files';
+if (!fs.existsSync(dirUpload)) {
+    fs.mkdirSync(dirUpload);
+}
+
 const request = require('request');
 //khai bao csdl
 const databaseService = require('../db/database-service');
@@ -11,67 +18,177 @@ databaseService.HandleDatabase.init();
 //khoa RSA su dung cho MidleWare:
 //su dung de import key chinh vao verify, sign, decrypted va encrytped
 const NodeRSA = require('node-rsa');
-const MidlewareRSA = new NodeRSA(null,{ signingScheme: 'pkcs1-sha256' });
+const MidlewareRSA = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' });
 
 var RSAKeyObj; //bien public de su dung
 
-var tokenSign = (req,userInfo) => {
-  
+
+var tokenSign = (req, userInfo) => {
   let signTime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+  return jwt.sign({
+    username: userInfo.USERNAME,
+    nickname: userInfo.DISPLAY_NAME,
+    image: userInfo.URL_IMAGE,//, //thong tin anh cua nguoi su dung
+    req_ip: req.ip, //chi duoc cap cho ip nay
+    req_time: signTime
+  },
+    (config.secret + req.ip + req.headers["user-agent"] + signTime)
+    , {
+      expiresIn: '24h' // expires in 24 hours
+    }
+  );
+}
 
-    return jwt.sign({
-                      username: userInfo.USERNAME,
-                      nickname: userInfo.DISPLAY_NAME,
-                      image: userInfo.URL_IMAGE,//, //thong tin anh cua nguoi su dung
-                      req_ip: req.ip, //chi duoc cap cho ip nay
-                      req_time: signTime
-                    },
-                      (config.secret + req.ip + req.headers["user-agent"] + signTime)
-                      ,{
-                        expiresIn: '24h' // expires in 24 hours
-                      }
-                    );
-} 
-  
-
-
-var tokenVerify = (req, res, next) => {
-  
-  let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
-
-  if (token) {
+var verifyToken=(req,res)=>{
+  if (req.token) {
+    var token = req.token;
     if (token.startsWith('Bearer ')) {
       // Remove Bearer from string
       token = token.slice(7, token.length);
     }
-    var tokenObj=jwt.decode(token);
-    
-    jwt.verify(token
-               ,(config.secret + req.ip + req.headers["user-agent"] + tokenObj.req_time ) 
-               , (err, decoded) => {
-      if (err) {
-        return res.end(JSON.stringify({
-          success: false,
-          message: 'Token is not valid',
-          error:err
-        }));
-      } else {
-        req.userInfo = decoded;
-        console.log("User Verify OK:");
-        //console.log(req.userInfo);
-        next();
-      }
-    });
-  } else {
+    var tokenObj = jwt.decode(token);
 
-    return res.end(JSON.stringify({
+    return jwt.verify(token
+      , (config.secret + req.ip + req.headers["user-agent"] + (tokenObj?tokenObj.req_time:''))
+      , (err, decoded) => {
+        if (err) {
+          /* return res.end(JSON.stringify({
+            success: false,
+            message: 'Token is not valid',
+            error: err
+          })); */
+          return false;
+        } else {
+          req.user = decoded;
+           console.log("User Verify OK:");
+          //next(); */
+          return true
+        }
+      });
+  } else {
+    /* return res.end(JSON.stringify({
       success: false,
       message: 'Auth token is not supplied'
-    }));
+    })); */
+    return false;
   }
 };
 
+
 class HandlerGenerator {
+
+  //kiem tra token bang get (header the same site)
+  tokenGetCheck(req, res, next){
+    let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
+    //gan cho request de xu ly ve sau
+    //xac thuc qua nhieu phuong phap (GET, POST, PARAM..)
+    req.token=token;
+    if (verifyToken(req,res)){
+      next();
+    }else{
+      res.end(JSON.stringify({
+        success: false,
+        message: 'Auth token is not supplied'
+      }));
+    }
+  }
+
+  //verify Post token from any client CORS (*)
+  //neu verify dung thi gan req.user = decode token de lay du lieu
+  tokenPostCheck(req, res, next) {
+    let postDataString = '';
+    // Get all post data when receive data event.
+    req.on('data', (chunk) => {
+      postDataString += chunk;
+    });
+    // When all request post data has been received.
+    req.on('end', () => {
+      //chuyen doi Object JSON tu chuoi data nhan duoc
+      let postDataObject = JSON.parse(postDataString);
+      //console.log(postDataObject);
+
+      if (postDataObject && postDataObject.Authorization) {
+        let token = postDataObject.Authorization;
+        //da lay duoc token qua json
+        //gan cho req de xu ly token
+        req.token=token;
+        if (verifyToken(req,res)){
+          next();
+        }else{
+          res.end(JSON.stringify({
+            success: false,
+            message: 'Auth token is not supplied'
+          }));
+        }
+      } else {
+        //khong truyen
+        return res.end(JSON.stringify({
+          success: false,
+          message: 'Auth token is not supplied ANY!'
+        }));
+      }
+    });
+  }
+
+  tokenPostFormCheck(req, res, next) {
+    const form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+      let token;
+      let userSave={};
+      if (err) {
+        res.end(JSON.stringify(err));
+      } else {
+        for (let key in fields) {
+          if (key = 'Authorization') token = fields[key];
+          if (key = 'DISPLAY_NAME') userSave.DISPLAY_NAME = fields[key];
+          if (key = 'FULL_NAME') userSave.FULL_NAME = fields[key];
+          if (key = 'PHONE') userSave.PHONE = fields[key];
+          if (key = 'EMAIL') userSave.EMAIL = fields[key];
+          if (key = 'FULL_ADDRESS') userSave.FULL_ADDRESS = fields[key];
+        }
+      }
+      //LUU FILE VAO URL
+      //CHI THUC HIEN TAI FILE KHI XAC THUC TOKEN LA DUNG
+      if (token) {
+        req.token=token;
+        if (verifyToken(req,res)){
+          //luu lay duong dan va tra next cho phien ke tiep
+          for (let key in files) {
+            //kiem tra tinh hop le cua file roi moi luu vao 
+            if (key.indexOf('file2Upload')>=0){
+              let curdatetime = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/-/g, '').replace(/:/g, '');
+              var filenameStored =  curdatetime + "_"
+              + files[key].size + "_"
+              + files[key].name;
+              
+              fs.createReadStream(files[key].path)
+              .pipe(fs.createWriteStream(dirUpload + systempath.sep + filenameStored))
+              ;
+              userSave.URL_IMAGE = '/file-upload/fix/' + filenameStored
+            }
+          }
+          req.userSave = userSave;
+          console.log('Thuc hien dowload file ve luu vao may ghi URL:');
+          console.log(req.user);
+          console.log(req.userSave);
+          next();
+        }else{
+          //tra ve web bao loi va ket thuc
+          res.end(JSON.stringify({
+            success: false,
+            message: 'Auth token is not valid'
+          }));
+        };
+      } else {
+        //khong truyen
+         res.end(JSON.stringify({
+          success: false,
+          message: 'Auth token is not supplied ANY!'
+        }));
+      }
+    });
+  }
+
   //register post
   register(req, res, next) {
     const form = new formidable.IncomingForm();
@@ -89,19 +206,19 @@ class HandlerGenerator {
           if (key = 'password') password = fields[key];
         }
       }
-      let decryptedPassSign ='';
-      if (username&&password){
+      let decryptedPassSign = '';
+      if (username && password) {
         username = username.toUpperCase();
-        try{
-          decryptedPassSign = MidlewareRSA.decrypt(password,'utf8');
+        try {
+          decryptedPassSign = MidlewareRSA.decrypt(password, 'utf8');
           decryptedPassSign = MidlewareRSA.sign(JSON.stringify({
-            username:username,
+            username: username,
             password: decryptedPassSign
           }), 'base64');
-        }catch(err){
+        } catch (err) {
           isOKAll = fasle;
         }
-      }else{
+      } else {
         isOKAll = false;
       }
 
@@ -111,51 +228,51 @@ class HandlerGenerator {
       // console.log(decryptedPassSign);
       //cuongdq,123
       //MB5poYdYTl1yH6AIVK+IwGH1Rg9iE80SBh6uEpqfVHMDfykBOo/WbwPLAn0HJkw455enNZPGUgHEFbgNN7Cxgg==
-      
+
       //goi database ghi nhan user
-      var userInfo={
+      var userInfo = {
         username: username,
         password: decryptedPassSign,
-        nickname:'cuong.dq',
-        fullname:'Đoàn Quốc Cường',
-        urlImage:'http://abc.jsp/anhcanhan.jsp',
+        nickname: 'cuong.dq',
+        fullname: 'Đoàn Quốc Cường',
+        urlImage: 'http://abc.jsp/anhcanhan.jsp',
         name: 'PHONE',
-        phone:'903500888',
-        email:'cuongdq350088@gmail.com',
-        address:'Admin đây mà',
+        phone: '903500888',
+        email: 'cuongdq350088@gmail.com',
+        address: 'Admin đây mà',
         ip: '10.12',
-        token:'xyz'
-        }
+        token: 'xyz'
+      }
 
-      if (isOKAll){
+      if (isOKAll) {
         databaseService.HandleDatabase.createUser(userInfo)
-        .then(data=>{
-          //console.log(data);
-          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
-          res.end(JSON.stringify({
-            success: true,
-            message: 'Đã đăng ký thành công!',
-            username: username,
-            token: decryptedPassSign
-          }));
-        })
-        .catch(err=>{
-          res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
-          res.end(JSON.stringify({
-            success: false,
-            message: 'Đăng ký không thành công đâu nhé',
-            error:err
-          }));
-        });
-      }else{
-        res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
-          res.end(JSON.stringify({
-            success: false,
-            message: 'Lỗi truyền số liệu không đúng'
-          }));
+          .then(data => {
+            //console.log(data);
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({
+              success: true,
+              message: 'Đã đăng ký thành công!',
+              username: username,
+              token: decryptedPassSign
+            }));
+          })
+          .catch(err => {
+            res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({
+              success: false,
+              message: 'Đăng ký không thành công đâu nhé',
+              error: err
+            }));
+          });
+      } else {
+        res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({
+          success: false,
+          message: 'Lỗi truyền số liệu không đúng'
+        }));
       }
     });
-    
+
   }
 
   //login post
@@ -177,67 +294,67 @@ class HandlerGenerator {
         }
       }
 
-      let decryptedPassSign ='';
-      if (username&&password){
+      let decryptedPassSign = '';
+      if (username && password) {
         username = username.toUpperCase();
-        try{
-          decryptedPassSign = MidlewareRSA.decrypt(password,'utf8');
+        try {
+          decryptedPassSign = MidlewareRSA.decrypt(password, 'utf8');
           decryptedPassSign = MidlewareRSA.sign(JSON.stringify({
-            username:username,
+            username: username,
             password: decryptedPassSign
           }), 'base64');
-        }catch(err){
+        } catch (err) {
           isOKAll = fasle;
         }
-      }else{
+      } else {
         isOKAll = false;
       }
 
-      var userInfo={
+      var userInfo = {
         username: username,
         password: decryptedPassSign
-        }
+      }
 
-      if (isOKAll){
-          databaseService.HandleDatabase.checkUser(userInfo)
-          .then(userInfo=>{
-            if (userInfo){
+      if (isOKAll) {
+        databaseService.HandleDatabase.checkUser(userInfo)
+          .then(userInfo => {
+            if (userInfo) {
               //thuc hien cac noi dung jwt
-              let tokenLogin = tokenSign(req,userInfo);
-    
+              let tokenLogin = tokenSign(req, userInfo);
+
               //su dung sha de certificate nua di?? thi client se khong lay duoc thong tin nay
               // console.log('tokenLogin:');
               // console.log(tokenLogin);
 
-              res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
+              res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
               res.end(JSON.stringify({
                 success: true,
                 message: 'Chúc mừng bạn đã login thành công! Hãy sử dụng thẻ truy cập để yêu cầu dữ liệu của chúng tôi trong 24h tới!',
                 token: tokenLogin
               }));
-            }else{
-              res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
+            } else {
+              res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
               res.end(JSON.stringify({
                 success: false,
                 message: 'Kiểm tra lại User/pass nhé!'
               }));
             }
           })
-          .catch(err=>{
-            res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
+          .catch(err => {
+            res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(JSON.stringify({
               success: false,
               message: 'Login không thành công-do lỗi query!',
-              error:err
+              error: err
             }));
           });
 
-      }else{
-        res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8'});
-          res.end(JSON.stringify({
-            success: false,
-            message: 'Lỗi truyền số liệu không đúng!'
-          }));
+      } else {
+        res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({
+          success: false,
+          message: 'Lỗi truyền số liệu không đúng!'
+        }));
       }
     })
   }
@@ -254,53 +371,53 @@ class HandlerGenerator {
 
 
   // khoi tao lay bien public 
-  init(){
+  init() {
     databaseService.HandleDatabase.
-    createServiceKey(databaseService.service_id)
-    .then(serverkey=>{
-      //gan vao de su dung lay lai lan sau nhe
-      RSAKeyObj = serverkey;
-      MidlewareRSA.importKey(serverkey.PRIVATE_KEY);
-    }).catch(err=>console.log(err))
-   }
+      createServiceKey(databaseService.service_id)
+      .then(serverkey => {
+        //gan vao de su dung lay lai lan sau nhe
+        RSAKeyObj = serverkey;
+        MidlewareRSA.importKey(serverkey.PRIVATE_KEY);
+      }).catch(err => console.log(err))
+  }
 
-   checkRoles(req, res, next){
-     //thay các quyền kiểm tra tại điều kiện kiểm tra nhé
-     //*********/
-    if (RSAKeyObj){
+  checkRoles(req, res, next) {
+    //thay các quyền kiểm tra tại điều kiện kiểm tra nhé
+    //*********/
+    if (RSAKeyObj) {
       //doi tuong su dung de encrypte, sign, decrypt, verify dung privatekey
       console.log(MidlewareRSA);
       next();
-    }else{
-      res.writeHead(403, { 'Content-Type': 'application/json'});
-      res.end(JSON.stringify({status:'NOK',message:'Bạn không có quyền vào hệ thống'}));
+    } else {
+      res.writeHead(403, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'NOK', message: 'Bạn không có quyền vào hệ thống' }));
     }
-   }
-
-   getRSAKeyObj(req, res, next){
-      res.writeHead(200, { 'Content-Type': 'application/json'});
-      res.end(JSON.stringify(RSAKeyObj));
-   }
-   
-   getPublickeyJson(req, res, next) {
-    databaseService.HandleDatabase.
-    createServiceKey(databaseService.service_id)
-    .then(serverkey=>{
-      //gan vao de su dung lay lai lan sau nhe
-      RSAKeyObj = serverkey;
-      MidlewareRSA.importKey(serverkey.PRIVATE_KEY);
-      //console.log(RSAKeyObj); 
-      res.writeHead(200, { 'Content-Type': 'application/json'});
-      res.end(JSON.stringify({
-        SERVICE_ID: serverkey.SERVICE_ID,
-        PUBLIC_KEY: serverkey.PUBLIC_KEY,
-        SERVICE_NAME: serverkey.SERVICE_NAME,
-        IS_ACTIVE: serverkey.IS_ACTIVE
-      }));
-    })
   }
 
-  cors(req, res, next){
+  getRSAKeyObj(req, res, next) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(RSAKeyObj));
+  }
+
+  getPublickeyJson(req, res, next) {
+    databaseService.HandleDatabase.
+      createServiceKey(databaseService.service_id)
+      .then(serverkey => {
+        //gan vao de su dung lay lai lan sau nhe
+        RSAKeyObj = serverkey;
+        MidlewareRSA.importKey(serverkey.PRIVATE_KEY);
+        //console.log(RSAKeyObj); 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          SERVICE_ID: serverkey.SERVICE_ID,
+          PUBLIC_KEY: serverkey.PUBLIC_KEY,
+          SERVICE_NAME: serverkey.SERVICE_NAME,
+          IS_ACTIVE: serverkey.IS_ACTIVE
+        }));
+      })
+  }
+
+  cors(req, res, next) {
     res.header("Access-Control-Allow-Methods", "POST, PUT, OPTIONS, DELETE, GET");
     res.header('Access-Control-Allow-Origin', 'http://localhost:9235');
     res.header('Access-Control-Allow-Origin', 'http://localhost:8100');
@@ -311,29 +428,31 @@ class HandlerGenerator {
     next();
   }
 
-  getRandomUser(req,res,next){
-    var urlGet='https://randomuser.me/api/?results=20';
+  getRandomUser(req, res, next) {
+    var urlGet = 'https://randomuser.me/api/?results=20';
     //const request = require('request');
     request(urlGet, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-          //console.log(body) // Print the google web page.
-          //console.log('req!');
-          //doc body lay mot anh dai dien?? icon?? 
-          res.writeHead(200, {'Content-Type': 'application/json'});
-          res.end(body);
-        } else {
-            //console.log(error);
-            res.writeHead(404, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(error));
-        }
+      if (!error && response.statusCode == 200) {
+        //console.log(body) // Print the google web page.
+        //console.log('req!');
+        //doc body lay mot anh dai dien?? icon?? 
+        res.header('Access-Control-Allow-Origin', '*');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(body);
+      } else {
+        //console.log(error);
+        res.header('Access-Control-Allow-Origin', '*');
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(error));
+      }
     });
   }
-  
+
 }
 
 
 module.exports = {
   db: databaseService, //chuyen db cho server 
-  checkToken: tokenVerify, //kiem tra token
+  //checkToken: tokenGetCheck, //kiem tra token phuong thuc get (header the same site)
   HandlerGenerator: new HandlerGenerator() //dieu khien 
 };

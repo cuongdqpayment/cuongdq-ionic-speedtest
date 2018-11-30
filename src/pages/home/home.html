@@ -1,44 +1,64 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>
-      Login form
-    </ion-title>
+          <button ion-button menuToggle color="primary">
+            <ion-icon name="menu"></ion-icon>
+          </button>
+          <ion-buttons start>
+              <img src="assets/imgs/logo.png">
+          </ion-buttons>
+          <ion-buttons end>
+              <button ion-button icon-only color="royal" (click)="forwardWeb()">
+                <ion-icon name="notifications" ios="ios-notifications" md="md-notifications"></ion-icon>
+                <ion-badge color="danger" *ngIf="page > 0">{{ page }}</ion-badge>
+              </button>
+          </ion-buttons>
   </ion-navbar>
 </ion-header>
-<ion-content padding class="card-background-page">
-  <form (ngSubmit)="onSubmit()" [formGroup]="myFromGroup">
-    <ion-card col-12 col-xl-4 col-lg-6 col-sm-12>
-      <ion-item>
-        <ion-label floating>Username</ion-label>
-        <ion-input type="text" formControlName="user"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label floating>Password</ion-label>
-        <ion-input type="password" formControlName="pass"></ion-input>
-      </ion-item>
-      <ion-row no-padding>
 
-          <ion-col>
-              <ion-buttons start>
-                  <button ion-button type="button" icon-end round (click)="callRegister()">
-                      Đăng ký nào
-                      <ion-icon name="images"></ion-icon>
-                  </button>
-              </ion-buttons>
-          </ion-col>
-
-        <ion-col text-right>
-          <ion-buttons start>
-            <button ion-button type="submit" icon-end round>
-              Đăng nhập nào
-              <ion-icon name="share-alt"></ion-icon>
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col *ngFor="let user of users" col-12 col-xl-4 col-lg-4 col-md-6 col-sm-6>
+        <ion-card>
+          <ion-item>
+            <ion-avatar item-start>
+              <img [src]="user.picture?.medium">
+            </ion-avatar>
+            <h2 text-capitalize>{{ user.name?.first }} {{ user.name?.last }}</h2>
+          </ion-item>
+          <ion-card-content>
+            Đây là nội dung BIẾT làm sao đây nè
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-infinite-scroll (ionInfinite)="doInfinite($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more data..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>
+<ion-footer>
+    <ion-toolbar color="primary">
+        <ion-buttons start>
+          <button ion-button icon-only color="royal">
+            <ion-icon name="logo-googleplus"></ion-icon>
+          </button>
+        </ion-buttons>
+        <ion-buttons left>
+            <button ion-button icon-only color="royal">
+              <ion-icon name="thumbs-up" ios="ios-thumbs-up" md="md-thumbs-up"></ion-icon>
             </button>
           </ion-buttons>
-        </ion-col>
-
-      </ion-row>
-
-    </ion-card>
-  </form>
-
-</ion-content>
+        <ion-buttons right>
+            <button ion-button icon-only color="royal">
+              <ion-icon name="chatbubbles" ios="ios-chatbubbles" md="md-chatbubbles"></ion-icon>
+            </button>
+          </ion-buttons>
+        <ion-title>cuongdq.payment@gmail.com</ion-title>
+        <ion-buttons end>
+          <button ion-button icon-only color="royal">
+            <ion-icon name="logo-facebook"></ion-icon>
+          </button>
+        </ion-buttons>
+      </ion-toolbar>
+</ion-footer>

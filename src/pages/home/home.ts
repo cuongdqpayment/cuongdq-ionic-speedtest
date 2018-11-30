@@ -1,11 +1,8 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
-import { FormGroup, FormBuilder } from '@angular/forms';
-import { RegisterPage } from '../register/register';
-import { MainPage } from '../main/main';
+import { Platform } from 'ionic-angular/platform/platform';
+import { AlertController } from 'ionic-angular/components/alert/alert-controller';
 import { ApiService } from '../../services/apiService';
-
-import NodeRSA from 'node-rsa';
 
 @Component({
   selector: 'page-home',
@@ -13,59 +10,61 @@ import NodeRSA from 'node-rsa';
 })
 export class HomePage {
 
-  public myFromGroup: FormGroup;
-  public isImageViewer: boolean = false;
-  public resourceImages: {imageViewer: any,file:any, name: string }[] = [];
-  public serverKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' });
-  
-  constructor(public navCtrl: NavController,
-    private formBuilder: FormBuilder,
-    private apiService: ApiService) { }
+  users = [];
+  page = 0;// Observable<any>;
+
+  constructor(
+    public navCtrl: NavController,
+    private apiService: ApiService,
+    private plt: Platform,
+    private alertCtrl: AlertController) {
+
+  }
 
   ngOnInit() {
-    this.apiService.getServerKey()
-    .then(pk=>{
-      try{
-        this.serverKey.importKey(pk);
-      }catch(err){
-        console.log(err);
-      }
-    })
-    .catch(err=>console.log(err));
-    
+    this.apiService.getRandomUser(20)
+      .subscribe(
+        userArray => {
+          this.page++;
+          this.users = this.users.concat(userArray)
+        }
+      );
+  }
 
-    this.myFromGroup = this.formBuilder.group({
-      user: 'cuongdq',
-      pass: '123'
+  checkPlatform() {
+    let alert = this.alertCtrl.create({
+      title: 'Platform',
+      message: 'You are running on: ' + this.plt.platforms(),
+      buttons: ['OK']
     });
+    alert.present();
+
+    if (this.plt.is('cordova')) {
+      // Do Cordova stuff
+    } else {
+      // Do stuff inside the regular browser
+    }
   }
 
-  onSubmit() {
-    var passEncrypted='';
-    try{
-      passEncrypted = this.serverKey.encrypt(this.myFromGroup.get('pass').value, 'base64', 'utf8');
-    }catch(err){
-      console.log(err);
-    }
+  doInfinite(infiniteScroll) {
+    setTimeout(() => {
+      this.apiService.getRandomUser(20)
+      .subscribe(
+        userArray => {
+          this.users = this.users.concat(userArray)
+          this.page++;
+          }
+        );
+      infiniteScroll.complete();
+    }, 1000);
+  }
 
-    var formData: FormData = new FormData();
-    formData.append("username",this.myFromGroup.get('user').value);
-    formData.append("password",passEncrypted);
-    
-    //gui lenh login 
-    this.apiService.postLogin(formData)
-    .then(token=>{
-      if (token){
-        console.log(this.apiService.getUserInfo());
-        this.navCtrl.push(MainPage);
-      }
+  forwardWeb(){
+    this.apiService.postUserSettings()
+    .then(data=>{
+      console.log(data);
     })
     .catch(err=>console.log(err));
-    
   }
 
-  callRegister(){
-    //console.log("goi dang ky")
-    this.navCtrl.push(RegisterPage);
-  }
 }

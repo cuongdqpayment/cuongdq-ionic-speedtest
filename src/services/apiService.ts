@@ -15,6 +15,7 @@ export class ApiService {
   public serverKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for crypte
   public publicKey:any;
   public userToken:any;
+  public userSetting:any;
 
 
   constructor(public httpClient: HttpClient, public sanitizer: DomSanitizer) {
@@ -61,28 +62,115 @@ export class ApiService {
 
   }
 
+  //get User API the same site
   getUserAPI(){
-    const httpOptions = {
+    if (this.userToken&&this.userToken.token){
+      let httpOptions = {
+        headers: new HttpHeaders({
+          'Authorization': 'Bearer '+ this.userToken.token
+        })
+      };
+      //su dung httpOption khi cung site, 
+      //neu khac site thi phai su dung Post kem theo key hoac get theo pramamterter
+      return this.httpClient.get('/api',httpOptions)
+      .toPromise()
+      .then(jsonData => {
+        return jsonData;
+      });
+      
+    }else{
+      return (new Promise((resolve, reject) => {
+            reject({error:'No token, please login first'}); //bao loi khong import key duoc
+        }));
+    }
+  }
+
+  //post from other site JsonString
+  postUserAPI(){
+    if (this.userToken&&this.userToken.token){
+      let jsonRequest = {Authorization: 'Bearer '+ this.userToken.token};
+      return this.httpClient.post(this.authenticationServer+'/api',JSON.stringify(jsonRequest))
+      .toPromise()
+      .then(jsonData => {
+        return jsonData;
+      });
+      
+    }else{
+      return (new Promise((resolve, reject) => {
+            reject({error:'No token, please login first'}); //bao loi khong import key duoc
+        }));
+    }
+  }
+
+  //get UserInfo for setting/edit the same site with headers
+  getUserSettings(){
+    if (this.userToken&&this.userToken.token){
+    let userOptions = {
       headers: new HttpHeaders({
         'Authorization': 'Bearer '+ this.userToken.token
       })
     };
-    return this.httpClient.get(this.authenticationServer+'/api',httpOptions)
+    return this.httpClient.get('/api/user-settings',userOptions)
              .toPromise()
              .then(jsonData => {
+              this.userSetting=jsonData;
               return jsonData;
              });
+    }else{
+      return (new Promise((resolve, reject) => {
+            reject({error:'No token, please login first'}); //bao loi khong import key duoc
+        }));
+    }
   }
-  getServerKey(){
-      return this.httpClient.get(this.authenticationServer+'/key-json')
+  //post UserSettings other site with Token JsonString
+  postUserSettings(){
+    if (this.userToken&&this.userToken.token){
+    let jsonRequest = {Authorization: 'Bearer '+ this.userToken.token};
+    return this.httpClient.post(this.authenticationServer+'/api/user-settings',JSON.stringify(jsonRequest))
              .toPromise()
              .then(jsonData => {
-              this.publicKey = jsonData;
-              //su dung bien any dia phuong moi het loi
-              return this.publicKey.PUBLIC_KEY;
+              this.userSetting=jsonData;
+              return jsonData;
              });
+    }else{
+      return (new Promise((resolve, reject) => {
+            reject({error:'No token, please login first'}); //bao loi khong import key duoc
+        }));
+    }
   }
 
+  //get RSA Public Key for decrypt, encryte any site
+  getServerKey(){
+      if (this.publicKey && this.publicKey.PUBLIC_KEY){
+        return (new Promise((resolve, reject) => {
+                  try{
+                    this.serverKey.importKey(this.publicKey.PUBLIC_KEY);
+                  }catch(err){
+                    reject(err); //bao loi khong import key duoc
+                  } 
+                  resolve(this.serverKey);
+              }));
+        
+      }else{ 
+        return this.httpClient.get(this.authenticationServer+'/key-json')
+               .toPromise()
+               .then(jsonData => {
+                this.publicKey = jsonData;
+                if (this.publicKey && this.publicKey.PUBLIC_KEY){
+                  try{
+                    this.serverKey.importKey(this.publicKey.PUBLIC_KEY);
+                  }catch(err){
+                    throw err;
+                  } 
+                  return this.serverKey;
+                }else{
+                  throw new Error('No PUBLIC_KEY exists!');
+                }
+               });
+      }
+  }
+
+  //post formdata to any site for login
   postLogin(formData){
     return this.httpClient.post(this.authenticationServer+'/login', formData)
                 .toPromise()
@@ -93,21 +181,26 @@ export class ApiService {
             
   }
 
+  //get token for post or get with authentication
   getUserToken(){
     return this.userToken.token;
   }
 
+  //get userInfo from token
   getUserInfo(){
     let userInfo={};
     try{
       userInfo= jwt.decode(this.userToken.token);
-      //console.log(userInfo);
     }catch(err){
-      //console.log(err);
     }
     return userInfo;
   }
-  //gui dang ky user
+  //lay thong tin user lay ra truoc do
+  getUserInfoSetting(){
+    return this.userSetting;
+  }
+  
+  //gui dang ky user tu any site
   postRegister(formData){
     return this.httpClient.post(this.authenticationServer+'/register', formData)
                 .toPromise()
@@ -116,16 +209,23 @@ export class ApiService {
                 });
             
   }
+  //luu lai du lieu da sua chua
+  postUserSave(formData){
+    return this.httpClient.post(this.authenticationServer+'/user/save', formData)
+                .toPromise()
+                .then(data => {
+                    return data;
+                });
+            
+  }
 
-  //lay user mau json
+  //lay user mau json any site
   getRandomUser(nRecord: number) {
     return this.httpClient.get('https://randomuser.me/api/?results=' + nRecord)
       .map(res => res['results'])
   }
 
-  //lay 
-
-
+  //lay url any site 
   getHtmlWeb(url: string) {
     //ket qua tra ve la text hay json, neu la text thi phai xu ly chuyen doi html
     //this.sanitizer.bypassSecurityTrustHtml(webhtml)
@@ -133,8 +233,9 @@ export class ApiService {
        .map(webhtml => webhtml);
   }
 
+  //post the same site CORS 
   postHtmlWeb(url: string, jsonRequest: any) {
-    const httpOptions = {
+    let httpOptions = {
       headers: new HttpHeaders({
         //'Authorization': 'my-auth-token',
         'Content-Type': 'application/x-www-form-urlencoded',
