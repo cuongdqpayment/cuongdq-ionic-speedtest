@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      Login form
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+<ion-content padding class="card-background-page">
+  <form (ngSubmit)="onSubmit()" [formGroup]="myFromGroup">
+    <ion-card col-12 col-xl-4 col-lg-6 col-sm-12>
+      <ion-item>
+        <ion-label floating>Username</ion-label>
+        <ion-input type="text" formControlName="user"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label floating>Password</ion-label>
+        <ion-input type="password" formControlName="pass"></ion-input>
+      </ion-item>
+      <ion-row no-padding>
+
+          <ion-col>
+              <ion-buttons start>
+                  <button ion-button type="button" icon-end round (click)="callRegister()">
+                      Đăng ký nào
+                      <ion-icon name="images"></ion-icon>
+                  </button>
+              </ion-buttons>
+          </ion-col>
+
+        <ion-col text-right>
+          <ion-buttons start>
+            <button ion-button type="submit" icon-end round>
+              Đăng nhập nào
+              <ion-icon name="share-alt"></ion-icon>
+            </button>
+          </ion-buttons>
+        </ion-col>
+
+      </ion-row>
+
+    </ion-card>
+  </form>
+
+</ion-content>

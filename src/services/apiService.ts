@@ -62,7 +62,7 @@ export class ApiService {
   }
 
   getUserAPI(){
-    const httpOptions = {
+    let httpOptions = {
       headers: new HttpHeaders({
         'Authorization': 'Bearer '+ this.userToken.token
       })
@@ -73,14 +73,49 @@ export class ApiService {
               return jsonData;
              });
   }
-  getServerKey(){
-      return this.httpClient.get(this.authenticationServer+'/key-json')
+
+  getUserSettings(){
+    let userOptions = {
+      headers: new HttpHeaders({
+        'Authorization': 'Bearer '+ this.userToken.token
+      })
+    };
+    //console.log(this.userToken.token);
+    return this.httpClient.get(this.authenticationServer+'/api/user-settings',userOptions)
              .toPromise()
              .then(jsonData => {
-              this.publicKey = jsonData;
-              //su dung bien any dia phuong moi het loi
-              return this.publicKey.PUBLIC_KEY;
+              return jsonData;
              });
+  }
+
+  getServerKey(){
+      if (this.publicKey && this.publicKey.PUBLIC_KEY){
+        return (new Promise((resolve, reject) => {
+                  try{
+                    this.serverKey.importKey(this.publicKey.PUBLIC_KEY);
+                  }catch(err){
+                    reject(err); //bao loi khong import key duoc
+                  } 
+                  resolve(this.serverKey);
+              }));
+        
+      }else{ 
+        return this.httpClient.get(this.authenticationServer+'/key-json')
+               .toPromise()
+               .then(jsonData => {
+                this.publicKey = jsonData;
+                if (this.publicKey && this.publicKey.PUBLIC_KEY){
+                  try{
+                    this.serverKey.importKey(this.publicKey.PUBLIC_KEY);
+                  }catch(err){
+                    throw err;
+                  } 
+                  return this.serverKey;
+                }else{
+                  throw new Error('No PUBLIC_KEY exists!');
+                }
+               });
+      }
   }
 
   postLogin(formData){
@@ -134,7 +169,7 @@ export class ApiService {
   }
 
   postHtmlWeb(url: string, jsonRequest: any) {
-    const httpOptions = {
+    let httpOptions = {
       headers: new HttpHeaders({
         //'Authorization': 'my-auth-token',
         'Content-Type': 'application/x-www-form-urlencoded',

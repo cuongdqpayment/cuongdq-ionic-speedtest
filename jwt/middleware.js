@@ -37,6 +37,8 @@ var tokenSign = (req,userInfo) => {
 
 var tokenVerify = (req, res, next) => {
   
+  console.log("Token verify:");
+
   let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
 
   if (token) {
@@ -319,10 +321,12 @@ class HandlerGenerator {
           //console.log(body) // Print the google web page.
           //console.log('req!');
           //doc body lay mot anh dai dien?? icon?? 
+          res.header('Access-Control-Allow-Origin', '*');
           res.writeHead(200, {'Content-Type': 'application/json'});
           res.end(body);
         } else {
             //console.log(error);
+            res.header('Access-Control-Allow-Origin', '*');
             res.writeHead(404, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify(error));
         }

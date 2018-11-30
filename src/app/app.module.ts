@@ -7,8 +7,9 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
-import { MainPage } from '../pages/main/main';
+import { LoginPage } from '../pages/login/login';
 import { RegisterPage } from '../pages/register/register';
+import { SettingPage } from '../pages/setting/setting';
 import { ApiService } from '../services/apiService';
 
 @NgModule({
@@ -16,7 +17,8 @@ import { ApiService } from '../services/apiService';
     MyApp,
     HomePage,
     RegisterPage,
-    MainPage
+    LoginPage,
+    SettingPage
   ],
   imports: [
     BrowserModule,
@@ -30,7 +32,8 @@ import { ApiService } from '../services/apiService';
     MyApp,
     HomePage,
     RegisterPage,
-    MainPage
+    LoginPage,
+    SettingPage
   ],
   providers: [
     StatusBar,

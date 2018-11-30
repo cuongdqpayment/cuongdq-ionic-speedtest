@@ -47,7 +47,6 @@ function main(isHttp, isHttps) {
   //1.dang ky duong dan tuyet doi co dinh cho ionic
   app.use(express.static(__dirname + '/www'));
 
-
   //Tra khoa public cho client
   app.get('/key-json', handlers.getPublickeyJson);
 
@@ -61,7 +60,9 @@ function main(isHttp, isHttps) {
   app.post('/register', handlers.register);
   //kiem tra token hop le hay khong, neu khong hop le thi tra ve trang chu
   //neu hop le thi tra ket qua ve
-  app.get('/api', middleware.checkToken, handlers.getRandomUser);
+  app.get('/api/user-settings', middleware.checkToken, handlers.getRandomUser);
+
+  //app.get('/api', middleware.checkToken, handlers.getRandomUser);
 
   //de truyen csdl vao doi tuong nao viet ham nhu sau
   /* app.use((res,res,next)=>{

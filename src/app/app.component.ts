@@ -1,27 +1,167 @@
-import { Component } from '@angular/core';
-import { Platform } from 'ionic-angular';
+import { Component, ViewChild } from '@angular/core';
+import { Nav, Platform, AlertController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { HomePage } from '../pages/home/home';
-
+import { SettingPage } from '../pages/setting/setting';
+import { ApiService } from '../services/apiService';
 
 @Component({
   templateUrl: 'app.html'
 })
 export class MyApp {
+  @ViewChild(Nav) navCtrl: Nav;
+  
+  userInfo:any;
   rootPage:any = HomePage;
+  pages: any =
+    [ {title:"Trang chủ",
+      page_id:1
+      },
+      {title:"Tin tức",
+      page_id:2
+      },
+      {title:"Upload",
+      page_id:3
+      },
+      {title:"trang 4",
+      page_id:4
+      },
+      {title:"trang 5",
+      page_id:5
+      },
+      {title:"trang 6",
+      page_id:6
+      },
+      {title:"Tìm kiếm",
+      page_id:99
+      }];
 
-  constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen) {
-    platform.ready().then(() => {
-      // Okay, so the platform is ready and our plugins are available.
-      // Here you can do any higher level native things you might need.
-      statusBar.styleDefault();
-      splashScreen.hide();
-    });
+  serverKey:any;
+
+  constructor(private platform: Platform, 
+              private statusBar: StatusBar, 
+              private alertCtrl: AlertController,
+              private apiService: ApiService,
+              private splashScreen: SplashScreen
+            ) {
   }
 
-  //tao RSA su dung lien lac voi server
+  ngOnInit() {
+    this.platform.ready().then(() => {
+      this.statusBar.styleDefault();
+      this.splashScreen.hide();
+    });
+
+    this.apiService.getServerKey()
+    .then(pk=>{ 
+      this.serverKey = pk;
+    })
+    .catch(err=>console.log(err));
+  }
 
 
+  goSearch(){
+   
+  }
+
+  openPage(page){
+    let page_id = page.page_id;
+    
+    switch (page_id) {
+      case 1:
+        this.navCtrl.setRoot(HomePage);
+        break;
+      default:
+        break;
+    }
+  }
+
+  presentLoginPrompt() {
+    //kiem tra co token roi thi tu dong login luon nhe
+    
+    let alert = this.alertCtrl.create({
+      title: 'Đăng nhập hệ thống',
+      inputs: [
+        {
+          name: 'username',
+          placeholder: 'Username - Tên Đăng nhập',
+          value:'cuongdq'
+        },
+        {
+          name: 'password',
+          placeholder: 'Password - Mật khẩu đăng nhập',
+          type: 'password',
+          value:'123'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: data => {
+            console.log('Cancel clicked');
+          }
+        },
+        {
+          text: 'Login',
+          handler: data => {
+            if (data.username&&data.password) {
+              // logged in!
+              this.onLogin(data.username,data.password);
+            } else {
+              // invalid login
+              return false;
+            }
+          }
+        }
+      ]
+    });
+    alert.present();
+  }
+
+  onLogin(username,password) {
+    var passEncrypted='';
+    try{
+      passEncrypted = this.serverKey.encrypt(password, 'base64', 'utf8');
+    }catch(err){
+      console.log(err);
+    }
+
+    var formData: FormData = new FormData();
+    formData.append("username",username);
+    formData.append("password",passEncrypted);
+    
+    //gui lenh login 
+    this.apiService.postLogin(formData)
+    .then(token=>{
+      if (token){
+        //console.log(this.apiService.getUserInfo());
+        this.userInfo = this.apiService.getUserInfo();
+      }
+    })
+    .catch(err=>console.log(err));
+  }
+
+  logout(){
+    this.userInfo=null;
+  }
+
+  setting(){
+    console.log('goi API');
+    
+    this.apiService.getUserSettings()
+    .then(user=>{
+      this.userInfo = user;
+      console.log(this.userInfo);
+      this.navCtrl.push(SettingPage);
+      //dong lai menu neu no dang mo
+    })
+    .catch(err=>{
+      console.log('err Loi goi API');
+      console.log(err);
+    });
+  }
+  
 }
 
