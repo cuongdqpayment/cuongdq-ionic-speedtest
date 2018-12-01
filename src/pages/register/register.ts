@@ -25,8 +25,8 @@ export class RegisterPage {
     .catch(err=>console.log(err));
 
     this.myFromGroup = this.formBuilder.group({
-      user: 'admin',
-      pass: 'password'
+      user: '',
+      pass: ''
     });
   }
 

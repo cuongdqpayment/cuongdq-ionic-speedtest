@@ -87,13 +87,13 @@ export class MyApp {
         {
           name: 'username',
           placeholder: 'Username - Tên Đăng nhập',
-          value:'cuongdq'
+          value:''
         },
         {
           name: 'password',
           placeholder: 'Password - Mật khẩu đăng nhập',
           type: 'password',
-          value:'123'
+          value:''
         }
       ],
       buttons: [
