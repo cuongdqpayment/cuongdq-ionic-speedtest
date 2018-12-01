@@ -249,26 +249,18 @@ class HandlerGenerator {
         isOKAll = false;
       }
 
-      //chu ky user name va pass ghi vao csdl
-      //user la uppercase + clearpass
-      // console.log('decryptedPassSign:');
-      // console.log(decryptedPassSign);
-      //cuongdq,123
-      //MB5poYdYTl1yH6AIVK+IwGH1Rg9iE80SBh6uEpqfVHMDfykBOo/WbwPLAn0HJkw455enNZPGUgHEFbgNN7Cxgg==
-
       //goi database ghi nhan user
       var userInfo = {
-        username: username,
-        password: decryptedPassSign,
-        nickname: 'cuong.dq',
-        fullname: 'Đoàn Quốc Cường',
-        urlImage: 'http://abc.jsp/anhcanhan.jsp',
-        name: 'PHONE',
-        phone: '903500888',
-        email: 'cuongdq350088@gmail.com',
-        address: 'Admin đây mà',
-        ip: '10.12',
-        token: 'xyz'
+        username: username
+        ,password: decryptedPassSign
+        ,ip: req.ip
+        /* ,nickname: 'cuong.dq'
+        ,fullname: 'Đoàn Quốc Cường'
+        ,urlImage: 'http://abc.jsp/anhcanhan.jsp'
+        ,name: 'PHONE'
+        ,phone: '903500888'
+        ,email: 'cuongdq350088@gmail.com'
+        ,address: 'Admin đây mà' */
       }
 
       if (isOKAll) {
