@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController, ToastController, LoadingController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ApiService } from '../../services/apiService';
 import { HomePage } from '../home/home';
@@ -16,7 +16,10 @@ export class SettingPage {
   public serverKey: any;
   public userInfo: any;
 
-  constructor(public navCtrl: NavController,
+  constructor(
+    public navCtrl: NavController,
+    public loadingCtrl: LoadingController,
+    public toastCtrl: ToastController,
     private formBuilder: FormBuilder,
     private apiService: ApiService) { }
 
@@ -89,15 +92,32 @@ export class SettingPage {
         formData.append('file2Upload'+i++, fileObj.file, fileObj.name);
         //gui tung file hoac tat ca cac file
       });
-      //gui lenh login 
+      //gui lenh user/save 
+      let loading = this.loadingCtrl.create({
+        content: 'Saving user info...'
+      });
+      loading.present();
+      
       this.apiService.postUserSave(formData)
         .then(data => {
-          //let result = data;
-          console.log(data)
+          loading.dismiss();
+          this.toastCtrl.create({
+            message:"result: " + JSON.stringify(data),
+            duration: 1000,
+            position: 'middle'
+          }).present();
           //quay tro lai trang chu roi nhe
           this.navCtrl.setRoot(HomePage);
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+          loading.dismiss();
+          this.toastCtrl.create({
+            message:"result: " + JSON.stringify(err),
+            duration: 5000,
+            position: 'bottom'
+          }).present();
+        }
+        );
   
     }
   }
