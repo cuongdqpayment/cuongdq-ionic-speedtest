@@ -139,6 +139,9 @@ export class MyApp {
       if (token){
         //console.log(this.apiService.getUserInfo());
         this.userInfo = this.apiService.getUserInfo();
+        if (!this.userInfo.nickname){
+          this.userInfo.nickname=this.userInfo.username;
+        }
       }
     })
     .catch(err=>console.log(err));
