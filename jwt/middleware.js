@@ -61,7 +61,8 @@ var verifyToken=(req,res)=>{
       token = token.slice(7, token.length);
     }
     var tokenObj = jwt.decode(token);
-
+    console.log('tokenObj:');
+    console.log(tokenObj);
     return jwt.verify(token
       , (config.secret + req.ip + req.headers["user-agent"] + (tokenObj?tokenObj.req_time:''))
       , (err, decoded) => {
@@ -84,21 +85,6 @@ class HandlerGenerator {
   // khoi tao lay bien public 
   init() {
     //KHONG CAN TAO //chi tao khi tao database thoi
-
-    //dam bao bang SERVER_KEY phai tao truoc
-    /* databaseService.HandleDatabase.
-      createServiceKey(databaseService.service_id)
-      .then(serverkey => {
-        //gan vao de su dung lay lai lan sau nhe
-        RSAKeyObj = serverkey;
-        MidlewareRSA.importKey(serverkey.PRIVATE_KEY);
-      }).catch(err => console.log(err)) */
-      /* databaseService.HandleDatabase.getServiceKey(databaseService.service_id)
-      .then(key=>{
-        MidlewareRSA = key;
-        console.log(key);
-      })
-      .catch(err => console.log(err)); */
   }
 
   //kiem tra token bang get (header the same site)
