@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ApiService } from '../../services/apiService';
+import { HomePage } from '../home/home';
 
 @Component({
   selector: 'page-setting',
@@ -24,14 +25,14 @@ export class SettingPage {
       .then(pk => this.serverKey = pk)
       .catch(err => console.log(err));
 
-    let userInfo = this.apiService.getUserInfoSetting()
+    this.userInfo = this.apiService.getUserInfoSetting()
 
     this.myFromGroup = this.formBuilder.group({
-        DISPLAY_NAME: (userInfo)?userInfo.DISPLAY_NAME:'',
-        FULL_NAME: (userInfo)?userInfo.FULL_NAME:'',
-        PHONE: (userInfo)?userInfo.PHONE:'',
-        EMAIL: (userInfo)?userInfo.EMAIL:'',
-        FULL_ADDRESS: (userInfo)?userInfo.FULL_ADDRESS:'',
+        DISPLAY_NAME: (this.userInfo)?this.userInfo.DISPLAY_NAME:'',
+        FULL_NAME: (this.userInfo)?this.userInfo.FULL_NAME:'',
+        PHONE: (this.userInfo)?this.userInfo.PHONE:'',
+        EMAIL: (this.userInfo)?this.userInfo.EMAIL:'',
+        FULL_ADDRESS: (this.userInfo)?this.userInfo.FULL_ADDRESS:'',
         fileload: '',
       });
   }
@@ -53,7 +54,12 @@ export class SettingPage {
     });
     //gui lenh login 
     this.apiService.postUserSave(formData)
-      .then(data => console.log(data))
+      .then(data => {
+        //let result = data;
+        console.log(data)
+        //quay tro lai trang chu roi nhe
+        this.navCtrl.setRoot(HomePage);
+      })
       .catch(err => console.log(err));
 
   }

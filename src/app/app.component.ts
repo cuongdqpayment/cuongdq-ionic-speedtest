@@ -156,7 +156,7 @@ export class MyApp {
     //neu khac site thi phai su dung param hoac post json token
     this.apiService.postUserSettings()
     .then(user=>{
-      console.log(this.apiService.getUserInfoSetting());
+      //console.log(this.apiService.getUserInfoSetting());
       this.navCtrl.push(SettingPage);
       //dong lai menu neu no dang mo
     })

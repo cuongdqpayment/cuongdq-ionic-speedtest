@@ -3,6 +3,7 @@ const config = require('./config.js');
 const formidable = require('formidable');
 const fs = require('fs');
 const systempath = require('path');
+const url = require('url');
 const dirUpload = 'upload_files';
 if (!fs.existsSync(dirUpload)) {
     fs.mkdirSync(dirUpload);
@@ -25,18 +26,19 @@ var RSAKeyObj; //bien public de su dung
 
 var tokenSign = (req, userInfo) => {
   let signTime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-  return jwt.sign({
-    username: userInfo.USERNAME,
-    nickname: userInfo.DISPLAY_NAME,
-    image: userInfo.URL_IMAGE,//, //thong tin anh cua nguoi su dung
-    req_ip: req.ip, //chi duoc cap cho ip nay
-    req_time: signTime
-  },
-    (config.secret + req.ip + req.headers["user-agent"] + signTime)
-    , {
-      expiresIn: '24h' // expires in 24 hours
-    }
-  );
+  let token = jwt.sign({
+                        username: userInfo.USERNAME,
+                        nickname: userInfo.DISPLAY_NAME,
+                        image: userInfo.URL_IMAGE,//, //thong tin anh cua nguoi su dung
+                        req_ip: req.ip, //chi duoc cap cho ip nay
+                        req_time: signTime
+                      },
+                        (config.secret + req.ip + req.headers["user-agent"] + signTime)
+                        , {
+                          expiresIn: '24h' // expires in 24 hours
+                        }
+                      );
+    return token;
 }
 
 var verifyToken=(req,res)=>{
@@ -52,24 +54,14 @@ var verifyToken=(req,res)=>{
       , (config.secret + req.ip + req.headers["user-agent"] + (tokenObj?tokenObj.req_time:''))
       , (err, decoded) => {
         if (err) {
-          /* return res.end(JSON.stringify({
-            success: false,
-            message: 'Token is not valid',
-            error: err
-          })); */
           return false;
         } else {
           req.user = decoded;
-           console.log("User Verify OK:");
-          //next(); */
+          //console.log("User Verify OK:");
           return true
         }
       });
   } else {
-    /* return res.end(JSON.stringify({
-      success: false,
-      message: 'Auth token is not supplied'
-    })); */
     return false;
   }
 };
@@ -78,6 +70,7 @@ var verifyToken=(req,res)=>{
 class HandlerGenerator {
 
   //kiem tra token bang get (header the same site)
+  //kiem tra HeaderOption with token then same site
   tokenGetCheck(req, res, next){
     let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
     //gan cho request de xu ly ve sau
@@ -93,8 +86,40 @@ class HandlerGenerator {
     }
   }
 
+  //su dung lenh get url?param1=xx&param2=xxx&token=xyz
+  tokenGetParamsCheck(req, res, next){
+    //lay token tren param
+    //console.log('Xu ly tham so' + JSON.stringify(url.parse(req.url, true, false)));
+    //chuyen doi duong dan tuyet doi
+    let path = decodeURIComponent(url.parse(req.url, true, false).pathname);
+    let query = url.parse(req.url, true, false).query;
+    // console.log('pathname: ' + path);
+    // console.log('query: ' + JSON.stringify(query));
+    if (path&&query&&query.token){
+      //xac thuc qua nhieu phuong phap (GET, POST, PARAM..)
+      req.token=query.token; //token de verify tra ve req.user
+      req.pathName=path; //truy van duong dan da xu ly req.pathName
+      if (verifyToken(req,res)){
+        next();
+      }else{
+        //cho phep chi can co token khong can dung
+        //lay anh xem
+        res.end(JSON.stringify({
+          success: false,
+          message: 'Auth token is invalid!'
+        }));
+      }
+    }else{
+      res.end(JSON.stringify({
+        success: false,
+        message: 'Auth token is not supplied'
+      }));
+    }
+
+  }
+
   //verify Post token from any client CORS (*)
-  //neu verify dung thi gan req.user = decode token de lay du lieu
+  //kiem tra du lieu kieu JSON.stringify
   tokenPostCheck(req, res, next) {
     let postDataString = '';
     // Get all post data when receive data event.
@@ -130,6 +155,7 @@ class HandlerGenerator {
     });
   }
 
+  //kiem tra du lieu kieu FormData
   tokenPostFormCheck(req, res, next) {
     const form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
@@ -164,13 +190,14 @@ class HandlerGenerator {
               fs.createReadStream(files[key].path)
               .pipe(fs.createWriteStream(dirUpload + systempath.sep + filenameStored))
               ;
-              userSave.URL_IMAGE = '/file-upload/fix/' + filenameStored
+              //ghi vao duong dan tuyet doi de khi doc ra, lay anh tu duong dan tuyet doi
+              userSave.URL_IMAGE = dirUpload + systempath.sep + filenameStored
             }
           }
           req.userSave = userSave;
-          console.log('Thuc hien dowload file ve luu vao may ghi URL:');
-          console.log(req.user);
-          console.log(req.userSave);
+          // console.log('Thuc hien dowload file ve luu vao may ghi URL:');
+          // console.log(req.user);
+          // console.log(req.userSave);
           next();
         }else{
           //tra ve web bao loi va ket thuc

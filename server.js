@@ -51,25 +51,31 @@ function main(isHttp, isHttps) {
   //1.dang ky duong dan tuyet doi co dinh cho ionic
   app.use(express.static(__dirname + '/www'));
 
+  
   //Tra khoa public cho client
   app.get('/key-json', handlers.getPublickeyJson);
-
+  
   //Tra bo khoa RSA cho admin xu ly, chi co quyen admin moi su dung duoc
   app.get('/admin-json', handlers.checkRoles, handlers.getRSAKeyObj);
-
+  
   // Routes & Handlers
   app.post('/login', handlers.login);
-
+  
   //Register user gửi lên form đăng ký
   app.post('/register', handlers.register);
-  //luu du lieu xuong database
-  app.post('/user/save',handlers.tokenPostFormCheck, handlers.getRandomUser);
+  
+  //luu du lieu xuong database Post kieu Formdata
+  app.post('/user/save',handlers.tokenPostFormCheck, middleware.db.HandleDatabase.saveUserInfo);
   //kiem tra token hop le hay khong, neu khong hop le thi tra ve trang chu
-  //neu hop le thi tra ket qua ve
+  //neu hop le thi tra ket qua ve Post kieu JSON.stringify({})
   app.post('/api', handlers.tokenPostCheck, handlers.getRandomUser);
   app.post('/api/user-settings', handlers.tokenPostCheck, middleware.db.HandleDatabase.getUserInfo);
-
   
+  //lay tai nguyen he thong qua token da cap 
+  var resources = require('./routes/get-resources');
+  app.use('/resources', handlers.tokenGetParamsCheck, resources);
+
+  //Get Kieu Header Authenticate, the same site CORS control
   app.get('/api', handlers.tokenGetCheck, handlers.getRandomUser);
   app.get('/api/user-settings', handlers.tokenGetCheck, middleware.db.HandleDatabase.getUserInfo);
 

@@ -781,6 +781,69 @@ class HandleDatabase {
         }
     }
 
+    saveUserInfo(req,res,next){
+        //req.user, req.userSave la 2 thanh phan duoc parse tu verify token
+        if (req.user&&req.user.username&&req.userSave){
+            //luu vao csdl
+            var userInfoSQLSave ={
+                name: 'LOCAL_USERS',
+                cols: [
+                    {
+                        name: 'USERNAME',
+                        value:req.user.username
+                    },
+                    {
+                        name: 'DISPLAY_NAME',
+                        value: req.userSave.DISPLAY_NAME
+                    },
+                    {
+                        name: 'URL_IMAGE',
+                        value: req.userSave.URL_IMAGE
+                    },
+                    {
+                        name: 'FULL_NAME'
+                        ,value: req.userSave.FULL_NAME
+                    },
+                    {
+                        name: 'PHONE'
+                        ,value: req.userSave.PHONE
+                    },
+                    {
+                        name: 'EMAIL'
+                        ,value: req.userSave.EMAIL
+                    },
+                    {
+                        name: 'FULL_ADDRESS'
+                        ,value: req.userSave.FULL_ADDRESS
+                    }
+                ],
+                wheres: [
+                    {
+                        name: 'USERNAME',
+                        value: req.user.username
+                    }
+                        ]
+            };
+            db.update(userInfoSQLSave)
+            .then(data=>{
+                //console.log(data);
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({status:'OK'
+                                        ,message:'Lưu thành công'
+                                        ,URL_IMAGE:req.userSave.URL_IMAGE //chuyen doi ham lay anh
+                                        ,username:req.user.username}));
+            })
+            .catch(err=>{
+                res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify(err));
+            })
+
+        }else{
+            res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({message:"No User Info!"}));
+        }
+    }
+
 }
 
 module.exports = {

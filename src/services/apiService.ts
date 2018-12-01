@@ -16,6 +16,7 @@ export class ApiService {
   public publicKey:any;
   public userToken:any;
   public userSetting:any;
+  public userInfo:any;
 
 
   constructor(public httpClient: HttpClient, public sanitizer: DomSanitizer) {
@@ -188,15 +189,44 @@ export class ApiService {
 
   //get userInfo from token
   getUserInfo(){
-    let userInfo={};
     try{
-      userInfo= jwt.decode(this.userToken.token);
+      this.userInfo= jwt.decode(this.userToken.token);
+      //console.log(this.userInfo);
+      //chuyen doi duong dan image de truy cap anh dai dien
+      if (this.userInfo.image
+          &&
+          this.userInfo.image.toLowerCase()
+          &&
+          this.userInfo.image.toLowerCase().indexOf('http://')<0
+          &&
+          this.userInfo.image.toLowerCase().indexOf('https://')<0){
+          //chuyen doi duong dan lay tai nguyen tai he thong
+          this.userInfo.image = this.authenticationServer 
+                                  + '/resources/user-image/'
+                                  + this.userInfo.image
+                                  + '?token='+this.userToken.token;
+          //console.log(this.userInfo.image);
+      }
     }catch(err){
     }
-    return userInfo;
+    return this.userInfo;
   }
-  //lay thong tin user lay ra truoc do
+  //lay thong tin user lay ra truoc do de edit
   getUserInfoSetting(){
+    if (this.userSetting.URL_IMAGE
+      &&
+      this.userSetting.URL_IMAGE.toLowerCase()
+      &&
+      this.userSetting.URL_IMAGE.toLowerCase().indexOf('http://')<0
+      &&
+      this.userSetting.URL_IMAGE.toLowerCase().indexOf('https://')<0){
+      //chuyen doi duong dan lay tai nguyen tai he thong
+      this.userSetting.URL_IMAGE = this.authenticationServer 
+                              + '/resources/user-image/'
+                              + this.userSetting.URL_IMAGE
+                              + '?token='+this.userToken.token;
+      //console.log(this.userSetting.URL_IMAGE);
+     }
     return this.userSetting;
   }
   

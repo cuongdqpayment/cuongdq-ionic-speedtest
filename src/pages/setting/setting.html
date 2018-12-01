@@ -28,6 +28,19 @@
           <ion-label floating>Address - Địa chỉ đầy đủ</ion-label>
           <ion-input type="text" formControlName="FULL_ADDRESS"></ion-input>
       </ion-item>
+
+      <ion-item >
+          <ion-grid>
+              <ion-row>
+                  <ion-col col-12>
+                      <ion-card>
+                          <img [src]="userInfo?.URL_IMAGE"/>
+                      </ion-card>
+                  </ion-col>
+              </ion-row>
+          </ion-grid>
+      </ion-item>
+
       <ion-item *ngIf="isImageViewer">
           <ion-grid>
               <ion-row>
