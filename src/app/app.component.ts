@@ -5,6 +5,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { HomePage } from '../pages/home/home';
 import { SettingPage } from '../pages/setting/setting';
 import { ApiService } from '../services/apiService';
+import { RegisterPage } from '../pages/register/register';
 
 @Component({
   templateUrl: 'app.html'
@@ -149,6 +150,7 @@ export class MyApp {
 
   onRegister(){
     //chuyen den trang dang ky
+    this.navCtrl.push(RegisterPage);
   }
 
   setting(){
