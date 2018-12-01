@@ -343,7 +343,7 @@ class HandlerGenerator {
             password: decryptedPassSign
           }), 'base64');
         } catch (err) {
-          isOKAll = fasle;
+          isOKAll = false;
         }
       } else {
         isOKAll = false;
