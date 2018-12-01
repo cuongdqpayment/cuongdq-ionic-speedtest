@@ -9,7 +9,7 @@ xl	1140px	Set grid width to 1140px when (min-width: 1200px)
     <ion-menu [content]="content" *ngIf="true">
         <ion-header>
             <ion-toolbar color="primary">
-                <ion-buttons start>
+                <ion-buttons start menuClose>
                     <button ion-button icon-only color="royal" (click)="goSearch()">
                         <ion-icon name="search"></ion-icon>
                     </button>
@@ -25,7 +25,7 @@ xl	1140px	Set grid width to 1140px when (min-width: 1200px)
                 <ion-title *ngIf="(userInfo==null)">
                    Login...
                 </ion-title>
-                <ion-buttons end *ngIf="(userInfo==null)">
+                <ion-buttons end *ngIf="(userInfo==null)" menuClose>
                     <button ion-button icon-only (click)="presentLoginPrompt()">
                         <ion-icon name="log-in" ios="ios-log-in" md="md-log-in"></ion-icon>
                     </button>
@@ -35,7 +35,7 @@ xl	1140px	Set grid width to 1140px when (min-width: 1200px)
                             <ion-icon name="log-out" ios="ios-log-out" md="md-log-out"></ion-icon>
                         </button>
                 </ion-buttons>
-                <ion-buttons right *ngIf="(userInfo!=null)">
+                <ion-buttons right *ngIf="(userInfo!=null)" menuClose>
                     <button ion-button icon-only (click)="setting()">
                         <ion-icon name="cog" ios="ios-cog" md="md-cog"></ion-icon>
                     </button>

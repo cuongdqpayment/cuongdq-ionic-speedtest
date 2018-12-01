@@ -108,6 +108,7 @@ export class SettingPage {
           }).present();
           //quay tro lai trang chu roi nhe
           this.navCtrl.setRoot(HomePage);
+          
         })
         .catch(err => {
           loading.dismiss();

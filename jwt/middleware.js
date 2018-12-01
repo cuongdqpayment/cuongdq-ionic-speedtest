@@ -34,7 +34,7 @@ var tokenSign = (req) => {
                     req_ip: req.ip, //chi duoc cap cho ip nay
                     req_time: signTime
                   },
-                    (config.secret + req.ip + req.headers["user-agent"] + signTime)
+                    (config.secret)// + req.ip + req.headers["user-agent"] + signTime)
                     , {
                       expiresIn: '24h' // expires in 24 hours
                     }
@@ -45,7 +45,7 @@ var tokenSign = (req) => {
       req_ip: req.ip,
       req_time: signTime
     },
-      (config.secret + req.ip + req.headers["user-agent"] + signTime)
+      (config.secret)// + req.ip + req.headers["user-agent"] + signTime)
       , {
         expiresIn: '24h' // expires in 24 hours
       }
@@ -64,7 +64,7 @@ var verifyToken=(req,res)=>{
     console.log('tokenObj:');
     console.log(tokenObj);
     return jwt.verify(token
-      , (config.secret + req.ip + req.headers["user-agent"] + (tokenObj?tokenObj.req_time:''))
+      , (config.secret)// + req.ip + req.headers["user-agent"] + (tokenObj?tokenObj.req_time:''))
       , (err, decoded) => {
         if (err) {
           return false;
@@ -192,6 +192,7 @@ class HandlerGenerator {
         }
       }
       //LUU FILE VAO URL
+      console.log(token);
       //CHI THUC HIEN TAI FILE KHI XAC THUC TOKEN LA DUNG
       if (token) {
         req.token=token;

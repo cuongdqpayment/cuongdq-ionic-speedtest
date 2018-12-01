@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
 @Injectable()
 export class ApiService {
   
-  public authenticationServer = '';//'http://localhost:9235';
+  public authenticationServer = 'https://cuongdq-oauth.herokuapp.com/';
   public clientKey = new NodeRSA({ b: 512 }, { signingScheme: 'pkcs1-sha256' }); //for decrypte
   public midleKey =  new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for test
   public serverKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for crypte
@@ -135,6 +135,7 @@ export class ApiService {
              });
     }else{
       return (new Promise((resolve, reject) => {
+            this.userSetting = null;
             reject({error:'No token, please login first'}); //bao loi khong import key duoc
         }));
     }

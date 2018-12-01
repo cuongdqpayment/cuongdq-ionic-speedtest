@@ -185,12 +185,21 @@ export class MyApp {
     this.apiService.postUserSettings()
     .then(user=>{
       //console.log(this.apiService.getUserInfoSetting());
+      this.toastCtrl.create({
+        message:"result: " + JSON.stringify(this.apiService.getUserInfoSetting()),
+        duration: 1000,
+        position: 'middle'
+      }).present();
+
       this.navCtrl.push(SettingPage);
       //dong lai menu neu no dang mo
     })
     .catch(err=>{
-      console.log('err Loi goi API');
-      console.log(err);
+      this.toastCtrl.create({
+        message:"err get API: : " + JSON.stringify(err),
+        duration: 1000,
+        position: 'bottom'
+      }).present();
     }); 
   }
   
