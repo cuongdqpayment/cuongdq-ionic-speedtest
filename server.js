@@ -36,20 +36,20 @@ function main(isHttp, isHttps) {
   
   //chuyen doi du lieu json dau vao thanh req.body la doi tuong chua json
   //app.use(bodyParser.json());
-
-  //luu log truy cap
-  app.use(handlers.logAccess);
-
+  
   //thiet lap cac tham so header dieu khien chung
   //cho phep goi qua ajax ...
   app.use(handlers.cors);
- 
+  
   //CHONG TAN CONG DDDOS
   //ngan chan truy cap ddos tra ket qua cho user neu truy cap tan suat lon 
   app.use(require('./ddos/config').express('ip', 'path'));
-
+  
   //1.dang ky duong dan tuyet doi co dinh cho ionic
   app.use(express.static(__dirname + '/www'));
+  
+  //luu log truy cap chi luu log nguoi dung login su dung tai nguyen thoi
+  app.use(handlers.logAccess);
 
   
   //Tra khoa public cho client

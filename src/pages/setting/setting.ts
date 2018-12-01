@@ -37,36 +37,10 @@ export class SettingPage {
       });
   }
 
-  onSubmit() {
-    
-    var formData: FormData = new FormData();
-    formData.append("Authorization", 'Bearer '+ this.apiService.getUserToken());
-    formData.append("DISPLAY_NAME", this.myFromGroup.get("DISPLAY_NAME").value);
-    formData.append("FULL_NAME", this.myFromGroup.get("FULL_NAME").value);
-    formData.append("PHONE", this.myFromGroup.get("PHONE").value);
-    formData.append("EMAIL", this.myFromGroup.get("EMAIL").value);
-    formData.append("FULL_ADDRESS", this.myFromGroup.get("FULL_ADDRESS").value);
-    var i=0;
-    this.resourceImages.forEach(fileObj => {
-      //console.log(fileObj.name);
-      formData.append('file2Upload'+i++, fileObj.file, fileObj.name);
-      //gui tung file hoac tat ca cac file
-    });
-    //gui lenh login 
-    this.apiService.postUserSave(formData)
-      .then(data => {
-        //let result = data;
-        console.log(data)
-        //quay tro lai trang chu roi nhe
-        this.navCtrl.setRoot(HomePage);
-      })
-      .catch(err => console.log(err));
-
-  }
-
-
+  
+  
   fileChange(event) {
-
+    
     if (event.target && event.target.files) {
       const files: { [key: string]: File } = event.target.files;
       for (let key in files) { //index, length, item
@@ -80,18 +54,46 @@ export class SettingPage {
                 file: files[key], //doi tuong file goc
                 name: files[key].name //ten file upload len
               }
-            );
-            this.isImageViewer = true;
+              );
+              this.isImageViewer = true;
+            }
           }
-        }
-      }//
+        }//
+      }
+    }
+    
+    
+    deleteImage(evt) {
+      this.resourceImages = this.resourceImages.filter((value, index, arr) => {
+        return value != evt;
+      });
+    }
+    //thuc hien submit
+    onSubmit() {
+      
+      var formData: FormData = new FormData();
+      formData.append("Authorization", 'Bearer '+ this.apiService.getUserToken());
+      formData.append("DISPLAY_NAME", this.myFromGroup.get("DISPLAY_NAME").value);
+      formData.append("FULL_NAME", this.myFromGroup.get("FULL_NAME").value);
+      formData.append("PHONE", this.myFromGroup.get("PHONE").value);
+      formData.append("EMAIL", this.myFromGroup.get("EMAIL").value);
+      formData.append("FULL_ADDRESS", this.myFromGroup.get("FULL_ADDRESS").value);
+      var i=0;
+      this.resourceImages.forEach(fileObj => {
+        //console.log(fileObj.name);
+        formData.append('file2Upload'+i++, fileObj.file, fileObj.name);
+        //gui tung file hoac tat ca cac file
+      });
+      //gui lenh login 
+      this.apiService.postUserSave(formData)
+        .then(data => {
+          //let result = data;
+          console.log(data)
+          //quay tro lai trang chu roi nhe
+          this.navCtrl.setRoot(HomePage);
+        })
+        .catch(err => console.log(err));
+  
     }
   }
-
-
-  deleteImage(evt) {
-    this.resourceImages = this.resourceImages.filter((value, index, arr) => {
-      return value != evt;
-    });
-  }
-}
+  

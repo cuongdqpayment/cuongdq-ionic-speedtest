@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ApiService } from '../../services/apiService';
+import { HomePage } from '../home/home';
 
 @Component({
   selector: 'page-register',
@@ -44,7 +45,12 @@ export class RegisterPage {
     
     //gui lenh login 
     this.apiService.postRegister(formData)
-    .then(data=>console.log(data))
+    .then(data=>{
+        //let result = data;
+        console.log(data)
+        //quay tro lai trang chu roi nhe
+        this.navCtrl.setRoot(HomePage);
+      })
     .catch(err=>console.log(err));
     
   }
