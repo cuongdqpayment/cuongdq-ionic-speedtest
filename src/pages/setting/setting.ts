@@ -73,11 +73,16 @@ export class SettingPage {
       
       var formData: FormData = new FormData();
       formData.append("Authorization", 'Bearer '+ this.apiService.getUserToken());
-      formData.append("DISPLAY_NAME", this.myFromGroup.get("DISPLAY_NAME").value);
-      formData.append("FULL_NAME", this.myFromGroup.get("FULL_NAME").value);
-      formData.append("PHONE", this.myFromGroup.get("PHONE").value);
-      formData.append("EMAIL", this.myFromGroup.get("EMAIL").value);
-      formData.append("FULL_ADDRESS", this.myFromGroup.get("FULL_ADDRESS").value);
+      if (this.myFromGroup.get("DISPLAY_NAME").value)
+        formData.append("DISPLAY_NAME", this.myFromGroup.get("DISPLAY_NAME").value);
+      if (this.myFromGroup.get("FULL_NAME").value)
+        formData.append("FULL_NAME", this.myFromGroup.get("FULL_NAME").value);
+      if (this.myFromGroup.get("PHONE").value)
+        formData.append("PHONE", this.myFromGroup.get("PHONE").value);
+      if (this.myFromGroup.get("EMAIL").value)
+        formData.append("EMAIL", this.myFromGroup.get("EMAIL").value);
+      if (this.myFromGroup.get("FULL_ADDRESS").value)  
+        formData.append("FULL_ADDRESS", this.myFromGroup.get("FULL_ADDRESS").value);
       var i=0;
       this.resourceImages.forEach(fileObj => {
         //console.log(fileObj.name);

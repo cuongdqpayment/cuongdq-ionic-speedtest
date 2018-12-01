@@ -523,10 +523,6 @@ class HandleDatabase {
     }
 
     createUser(userInfo){
-        //gui lenh vao de tao user trong csdl
-        //thu xem da kho tao lay duoc key public chua
-        //console.log(RSAKeyRow);
-        //password thi hash duoi dang certificate tuc la sign
         var userInfoSQL ={
             name: 'LOCAL_USERS',
             cols: [
@@ -576,13 +572,9 @@ class HandleDatabase {
     return db.insert(userInfoSQL)
       .then(data => {
         if (!isSilence) console.log(data);
-        return data;
+        return true; //excuted du lieu thanh cong
         }
-      )/* 
-      .catch(err=>{
-          if (!isSilence) console.log(err);
-        return err;
-      }) */;
+      )
     }
     
     updateUser(userInfo){
@@ -715,10 +707,14 @@ class HandleDatabase {
 
         return db.select(userInfoSQL)
         .then(data => {
-            if (!isSilence) console.log(data)
-            // console.log('data');
-            // console.log(data);
-            return data;
+            if (data){
+                if (!isSilence) console.log(data)
+                return data;
+            }else{ //khong tim thay user nen tra ve loi thoi
+                //tra loi xuong catch ben duoi xem Promise trong Nodejs test
+                throw {code:403
+                       ,message:'Please check username & password again!'};
+            }
         }
         );
     }
@@ -767,9 +763,15 @@ class HandleDatabase {
     
             db.select(userInfoSQL)
             .then(data => {
-                if (!isSilence) console.log(data);
-                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-                res.end(JSON.stringify(data));
+                if (data){
+                    if (!isSilence) console.log(data);
+                    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                    res.end(JSON.stringify(data));
+                }else{
+                    //tra loi xuong catch ben duoi
+                    throw {code:403
+                        ,message:'No username '+ req.user.username + ' exists!'};
+                }
             })
             .catch(err=>{
                 res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });

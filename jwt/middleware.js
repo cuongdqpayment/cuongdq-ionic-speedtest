@@ -191,6 +191,8 @@ class HandlerGenerator {
         req.token=token;
         if (verifyToken(req,res)){
           //luu lay duong dan va tra next cho phien ke tiep
+          console.log('Token FormData Post OK:');
+          console.log(req.user);
           for (let key in files) {
             //kiem tra tinh hop le cua file roi moi luu vao 
             if (key.indexOf('file2Upload')>=0){
@@ -213,6 +215,7 @@ class HandlerGenerator {
           next();
         }else{
           //tra ve web bao loi va ket thuc
+          console.log('Token FormData Post Invalid!');
           res.end(JSON.stringify({
             success: false,
             message: 'Auth token is not valid'
@@ -278,13 +281,12 @@ class HandlerGenerator {
       if (isOKAll) {
         databaseService.HandleDatabase.createUser(userInfo)
           .then(data => {
-            //console.log(data);
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(JSON.stringify({
               success: true,
               message: 'Đã đăng ký thành công!',
               username: username,
-              token: decryptedPassSign
+              certificate: decryptedPassSign
             }));
           })
           .catch(err => {

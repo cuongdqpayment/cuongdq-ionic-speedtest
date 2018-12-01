@@ -51,7 +51,6 @@ function main(isHttp, isHttps) {
   //luu log truy cap chi luu log nguoi dung login su dung tai nguyen thoi
   app.use(handlers.logAccess);
 
-  
   //Tra khoa public cho client
   app.get('/key-json', handlers.getPublickeyJson);
   
