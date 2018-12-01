@@ -29,7 +29,7 @@
           <ion-input type="text" formControlName="FULL_ADDRESS"></ion-input>
       </ion-item>
 
-      <ion-item >
+      <ion-item *ngIf="(userInfo?.URL_IMAGE)">
           <ion-grid>
               <ion-row>
                   <ion-col col-12>

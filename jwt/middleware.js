@@ -24,12 +24,14 @@ const MidlewareRSA = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' });
 var RSAKeyObj; //bien public de su dung
 
 
-var tokenSign = (req, userInfo) => {
+var tokenSign = (req) => {
+  if (req.user&&req.user.USERNAME)
+  //console.log(req.user);
   let signTime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-  let token = jwt.sign({
-                        username: userInfo.USERNAME,
-                        nickname: userInfo.DISPLAY_NAME,
-                        image: userInfo.URL_IMAGE,//, //thong tin anh cua nguoi su dung
+  return jwt.sign({
+                        username: req.user.USERNAME,
+                        nickname: (req.user.DISPLAY_NAME)?req.user.DISPLAY_NAME:'',
+                        image: (req.user.URL_IMAGE)?req.user.URL_IMAGE:'',//, //thong tin anh cua nguoi su dung
                         req_ip: req.ip, //chi duoc cap cho ip nay
                         req_time: signTime
                       },
@@ -38,7 +40,6 @@ var tokenSign = (req, userInfo) => {
                           expiresIn: '24h' // expires in 24 hours
                         }
                       );
-    return token;
 }
 
 var verifyToken=(req,res)=>{
@@ -339,7 +340,8 @@ class HandlerGenerator {
           .then(userInfo => {
             if (userInfo) {
               //thuc hien cac noi dung jwt
-              let tokenLogin = tokenSign(req, userInfo);
+              req.user = userInfo;
+              let tokenLogin = tokenSign(req);
 
               //su dung sha de certificate nua di?? thi client se khong lay duoc thong tin nay
               // console.log('tokenLogin:');
