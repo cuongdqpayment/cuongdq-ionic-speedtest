@@ -147,7 +147,7 @@ export class MyApp {
         loading.dismiss();
           this.toastCtrl.create({
             message:"result: " + JSON.stringify(token),
-            duration: 1000,
+            duration: 5000,
             position: 'middle'
           }).present();
         
@@ -187,7 +187,7 @@ export class MyApp {
       //console.log(this.apiService.getUserInfoSetting());
       this.toastCtrl.create({
         message:"result: " + JSON.stringify(this.apiService.getUserInfoSetting()),
-        duration: 1000,
+        duration: 5000,
         position: 'middle'
       }).present();
 
@@ -197,7 +197,7 @@ export class MyApp {
     .catch(err=>{
       this.toastCtrl.create({
         message:"err get API: : " + JSON.stringify(err),
-        duration: 1000,
+        duration: 5000,
         position: 'bottom'
       }).present();
     }); 
