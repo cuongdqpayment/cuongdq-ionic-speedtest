@@ -25,21 +25,32 @@ var RSAKeyObj; //bien public de su dung
 
 
 var tokenSign = (req) => {
-  if (req.user&&req.user.USERNAME)
-  //console.log(req.user);
   let signTime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-  return jwt.sign({
-                        username: req.user.USERNAME,
-                        nickname: (req.user.DISPLAY_NAME)?req.user.DISPLAY_NAME:'',
-                        image: (req.user.URL_IMAGE)?req.user.URL_IMAGE:'',//, //thong tin anh cua nguoi su dung
-                        req_ip: req.ip, //chi duoc cap cho ip nay
-                        req_time: signTime
-                      },
-                        (config.secret + req.ip + req.headers["user-agent"] + signTime)
-                        , {
-                          expiresIn: '24h' // expires in 24 hours
-                        }
-                      );
+  if (req.user&&req.user.USERNAME){
+    return jwt.sign({
+                    username: req.user.USERNAME,
+                    nickname: (req.user.DISPLAY_NAME)?req.user.DISPLAY_NAME:'',
+                    image: (req.user.URL_IMAGE)?req.user.URL_IMAGE:'',//, //thong tin anh cua nguoi su dung
+                    req_ip: req.ip, //chi duoc cap cho ip nay
+                    req_time: signTime
+                  },
+                    (config.secret + req.ip + req.headers["user-agent"] + signTime)
+                    , {
+                      expiresIn: '24h' // expires in 24 hours
+                    }
+                  );
+  }else{
+    return jwt.sign({
+      req_device:req.headers["user-agent"],
+      req_ip: req.ip,
+      req_time: signTime
+    },
+      (config.secret + req.ip + req.headers["user-agent"] + signTime)
+      , {
+        expiresIn: '24h' // expires in 24 hours
+      }
+    );
+  }
 }
 
 var verifyToken=(req,res)=>{
