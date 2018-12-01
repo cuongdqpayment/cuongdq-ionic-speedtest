@@ -81,6 +81,26 @@ var verifyToken=(req,res)=>{
 
 class HandlerGenerator {
 
+  // khoi tao lay bien public 
+  init() {
+    //KHONG CAN TAO //chi tao khi tao database thoi
+
+    //dam bao bang SERVER_KEY phai tao truoc
+    /* databaseService.HandleDatabase.
+      createServiceKey(databaseService.service_id)
+      .then(serverkey => {
+        //gan vao de su dung lay lai lan sau nhe
+        RSAKeyObj = serverkey;
+        MidlewareRSA.importKey(serverkey.PRIVATE_KEY);
+      }).catch(err => console.log(err)) */
+      /* databaseService.HandleDatabase.getServiceKey(databaseService.service_id)
+      .then(key=>{
+        MidlewareRSA = key;
+        console.log(key);
+      })
+      .catch(err => console.log(err)); */
+  }
+
   //kiem tra token bang get (header the same site)
   //kiem tra HeaderOption with token then same site
   tokenGetCheck(req, res, next){
@@ -255,7 +275,7 @@ class HandlerGenerator {
           decryptedPassSign = MidlewareRSA.decrypt(password, 'utf8');
           decryptedPassSign = MidlewareRSA.sign(JSON.stringify({
             username: username,
-            password: decryptedPassSign
+            password: decryptedPassSign //clear password
           }), 'base64');
         } catch (err) {
           isOKAll = fasle;
@@ -272,7 +292,6 @@ class HandlerGenerator {
         /* ,nickname: 'cuong.dq'
         ,fullname: 'Đoàn Quốc Cường'
         ,urlImage: 'http://abc.jsp/anhcanhan.jsp'
-        ,name: 'PHONE'
         ,phone: '903500888'
         ,email: 'cuongdq350088@gmail.com'
         ,address: 'Admin đây mà' */
@@ -403,18 +422,6 @@ class HandlerGenerator {
     res.end(JSON.stringify(err))
   }
 
-
-  // khoi tao lay bien public 
-  init() {
-    databaseService.HandleDatabase.
-      createServiceKey(databaseService.service_id)
-      .then(serverkey => {
-        //gan vao de su dung lay lai lan sau nhe
-        RSAKeyObj = serverkey;
-        MidlewareRSA.importKey(serverkey.PRIVATE_KEY);
-      }).catch(err => console.log(err))
-  }
-
   checkRoles(req, res, next) {
     //thay các quyền kiểm tra tại điều kiện kiểm tra nhé
     //*********/
@@ -448,6 +455,10 @@ class HandlerGenerator {
           SERVICE_NAME: serverkey.SERVICE_NAME,
           IS_ACTIVE: serverkey.IS_ACTIVE
         }));
+      })
+      .catch(err=>{
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(err));
       })
   }
 
