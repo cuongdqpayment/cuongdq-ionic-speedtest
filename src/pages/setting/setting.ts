@@ -17,9 +17,9 @@ export class SettingPage {
   public userInfo: any;
 
   constructor(
-    public navCtrl: NavController,
-    public loadingCtrl: LoadingController,
-    public toastCtrl: ToastController,
+    private navCtrl: NavController,
+    private loadingCtrl: LoadingController,
+    private toastCtrl: ToastController,
     private formBuilder: FormBuilder,
     private apiService: ApiService) { }
 

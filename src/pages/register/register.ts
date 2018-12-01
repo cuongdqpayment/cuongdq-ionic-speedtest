@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController, ToastController, LoadingController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ApiService } from '../../services/apiService';
 import { HomePage } from '../home/home';
@@ -15,7 +15,10 @@ export class RegisterPage {
   public resourceImages: {imageViewer: any,file:any, name: string }[] = [];
   public serverKey:any;
   
-  constructor(public navCtrl: NavController,
+  constructor(
+    private navCtrl: NavController,
+    private loadingCtrl: LoadingController,
+    private toastCtrl: ToastController,
     private formBuilder: FormBuilder,
     private apiService: ApiService) { }
 
@@ -44,14 +47,30 @@ export class RegisterPage {
     formData.append("password",passEncrypted);
     
     //gui lenh login 
+    let loading = this.loadingCtrl.create({
+      content: 'Saving user info...'
+    });
+    loading.present();
+
     this.apiService.postRegister(formData)
     .then(data=>{
-        //let result = data;
-        console.log(data)
-        //quay tro lai trang chu roi nhe
+        loading.dismiss();
+        this.toastCtrl.create({
+          message:"result: " + JSON.stringify(data),
+          duration: 1000,
+          position: 'middle'
+        }).present();
         this.navCtrl.setRoot(HomePage);
       })
-    .catch(err=>console.log(err));
+    .catch(err=>{
+      loading.dismiss();
+      this.toastCtrl.create({
+        message:"result: " + JSON.stringify(err),
+        duration: 5000,
+        position: 'bottom'
+      }).present();
+    }
+    );
     
   }
 }

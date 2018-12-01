@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { Nav, Platform, AlertController } from 'ionic-angular';
+import { Nav, Platform, AlertController, ToastController, LoadingController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { HomePage } from '../pages/home/home';
@@ -43,6 +43,8 @@ export class MyApp {
   constructor(private platform: Platform, 
               private statusBar: StatusBar, 
               private alertCtrl: AlertController,
+              private loadingCtrl: LoadingController,
+              private toastCtrl: ToastController,
               private apiService: ApiService,
               private splashScreen: SplashScreen
             ) {
@@ -134,17 +136,38 @@ export class MyApp {
     formData.append("password",passEncrypted);
     
     //gui lenh login 
+    let loading = this.loadingCtrl.create({
+      content: 'Saving user info...'
+    });
+    loading.present();
+
     this.apiService.postLogin(formData)
     .then(token=>{
       if (token){
-        //console.log(this.apiService.getUserInfo());
+        loading.dismiss();
+          this.toastCtrl.create({
+            message:"result: " + JSON.stringify(token),
+            duration: 1000,
+            position: 'middle'
+          }).present();
+        
         this.userInfo = this.apiService.getUserInfo();
         if (!this.userInfo.nickname){
           this.userInfo.nickname=this.userInfo.username;
         }
+      }else{
+        throw {code:403,message:'No token'}
       }
     })
-    .catch(err=>console.log(err));
+    .catch(err=>{
+      loading.dismiss();
+      this.toastCtrl.create({
+        message:"result: " + JSON.stringify(err),
+        duration: 5000,
+        position: 'bottom'
+      }).present();
+    }
+    );
   }
 
   logout(){
