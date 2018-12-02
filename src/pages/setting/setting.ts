@@ -3,8 +3,8 @@ import { NavController, ToastController, LoadingController } from 'ionic-angular
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ApiAuthService } from '../../services/apiAuthService';
 import { LoginPage } from '../login/login';
+import { ApiImageService } from '../../services/apiImageService'
 
-//import sharp from 'sharp';
 
 @Component({
   selector: 'page-setting',
@@ -14,7 +14,7 @@ export class SettingPage {
 
   public myFromGroup: FormGroup;
   public isImageViewer: boolean = false;
-  public resourceImages: { imageViewer: any, file: any, name: string }[] = [];
+  public resourceImages=[]//: { imageViewer: any, file: any, name: string }[] = [];
   public serverKey: any;
   public userInfo: any;
 
@@ -23,6 +23,7 @@ export class SettingPage {
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private formBuilder: FormBuilder,
+    private apiImageService: ApiImageService,
     private apiService: ApiAuthService) { }
 
   ngOnInit() {
@@ -33,140 +34,95 @@ export class SettingPage {
     this.userInfo = this.apiService.getUserInfoSetting()
 
     this.toastCtrl.create({
-      message:"getUserInfoSetting: " + JSON.stringify(this.userInfo),
-      duration: 5000,
+      message: "getUserInfoSetting: " + JSON.stringify(this.userInfo),
+      duration: 1000,
       position: 'top'
     }).present();
 
     this.myFromGroup = this.formBuilder.group({
-        DISPLAY_NAME: (this.userInfo)?this.userInfo.DISPLAY_NAME:'',
-        FULL_NAME: (this.userInfo)?this.userInfo.FULL_NAME:'',
-        PHONE: (this.userInfo)?this.userInfo.PHONE:'',
-        EMAIL: (this.userInfo)?this.userInfo.EMAIL:'',
-        FULL_ADDRESS: (this.userInfo)?this.userInfo.FULL_ADDRESS:'',
-        fileload: '',
-      });
+      DISPLAY_NAME: (this.userInfo) ? this.userInfo.DISPLAY_NAME : '',
+      FULL_NAME: (this.userInfo) ? this.userInfo.FULL_NAME : '',
+      PHONE: (this.userInfo) ? this.userInfo.PHONE : '',
+      EMAIL: (this.userInfo) ? this.userInfo.EMAIL : '',
+      FULL_ADDRESS: (this.userInfo) ? this.userInfo.FULL_ADDRESS : '',
+      fileload: '',
+    });
   }
 
-  
-  
+
+
   fileChange(event) {
-    
     if (event.target && event.target.files) {
       const files: { [key: string]: File } = event.target.files;
       for (let key in files) { //index, length, item
         if (!isNaN(parseInt(key))) {
-         
-
-          /* var canvas = document.createElement('canvas');
-          var context = canvas.getContext('2d');
-          var maxW = 300;
-          var maxH = 300;
-          var img = document.createElement('img');
-          img.onload = ()=>{
-            var iw = img.width;
-            var ih = img.height;
-            var scale = Math.min((maxW / iw), (maxH / ih));
-            var iwScaled = iw * scale;
-            var ihScaled = ih * scale;
-            canvas.width = iwScaled;
-            canvas.height = ihScaled;
-            context.drawImage(img, 0, 0, iwScaled, ihScaled);
-            canvas.toBlob((blob)=>{
-              var reader = new FileReader();
-              reader.onload = () => {
-                //var url = URL.createObjectURL(reader.result);
-                console.log(reader.result);
-                this.resourceImages.push(
-                  {
-                    imageViewer: reader.result,//canvas.toDataURL(),//reader.result, //ket qua doc file ra binary can resize 
-                    file: files[key], //doi tuong file goc can resize lai
-                    name: files[key].name //ten file upload len
-                  }
-                  );
-                  this.isImageViewer = true;
-                } 
-              reader.readAsArrayBuffer(blob);
-            }); 
-          }
-          img.src = URL.createObjectURL(files[key]); */
-
-      
-          let reader = new FileReader();
-          reader.readAsDataURL(files[key]);
-          reader.onload = (kq: any) => {
-            //resize truoc khi upload
-            //resizeImage.resize()
-            this.resourceImages.push(
-              {
-                imageViewer: kq.target.result, //ket qua doc file ra binary can resize 
-                file: files[key], //doi tuong file goc can resize lai
-                name: files[key].name //ten file upload len
-              }
-              );
-              this.isImageViewer = true;
-            }
-
-          }
-        }//
-      }
-    }
-    
-    
-    deleteImage(evt) {
-      this.resourceImages = this.resourceImages.filter((value, index, arr) => {
-        return value != evt;
-      });
-    }
-    //thuc hien submit
-    onSubmit() {
-      
-      var formData: FormData = new FormData();
-      formData.append("Authorization", 'Bearer '+ this.apiService.getUserToken());
-      if (this.myFromGroup.get("DISPLAY_NAME").value)
-        formData.append("DISPLAY_NAME", this.myFromGroup.get("DISPLAY_NAME").value);
-      if (this.myFromGroup.get("FULL_NAME").value)
-        formData.append("FULL_NAME", this.myFromGroup.get("FULL_NAME").value);
-      if (this.myFromGroup.get("PHONE").value)
-        formData.append("PHONE", this.myFromGroup.get("PHONE").value);
-      if (this.myFromGroup.get("EMAIL").value)
-        formData.append("EMAIL", this.myFromGroup.get("EMAIL").value);
-      if (this.myFromGroup.get("FULL_ADDRESS").value)  
-        formData.append("FULL_ADDRESS", this.myFromGroup.get("FULL_ADDRESS").value);
-      var i=0;
-      this.resourceImages.forEach(fileObj => {
-        //console.log(fileObj.name);
-        formData.append('file2Upload'+i++, fileObj.file, fileObj.name);
-        //gui tung file hoac tat ca cac file
-      });
-      //gui lenh user/save 
-      let loading = this.loadingCtrl.create({
-        content: 'Saving user info...'
-      });
-      loading.present();
-      
-      this.apiService.editUser(formData)
-        .then(data => {
-          loading.dismiss();
-          this.toastCtrl.create({
-            message:"result: " + JSON.stringify(data),
-            duration: 5000,
-            position: 'middle'
-          }).present();
-          //quay tro lai trang chu roi nhe
-          this.navCtrl.setRoot(LoginPage);
-          
-        })
-        .catch(err => {
-          loading.dismiss();
-          this.toastCtrl.create({
-            message:"result: " + JSON.stringify(err),
-            duration: 5000,
-            position: 'bottom'
-          }).present();
+          this.apiImageService.resizeImage(files[key].name,files[key],300)
+          .then(data=>{
+            this.resourceImages.push(data);
+            this.isImageViewer = true;
+          })
+          .catch(err=>{
+            console.log(err);
+          })
         }
-        );
-  
+      }//
     }
   }
-  
+
+
+  deleteImage(evt) {
+    this.resourceImages = this.resourceImages.filter((value, index, arr) => {
+      return value != evt;
+    });
+  }
+  //thuc hien submit
+  onSubmit() {
+
+    var formData: FormData = new FormData();
+    formData.append("Authorization", 'Bearer ' + this.apiService.getUserToken());
+    if (this.myFromGroup.get("DISPLAY_NAME").value)
+      formData.append("DISPLAY_NAME", this.myFromGroup.get("DISPLAY_NAME").value);
+    if (this.myFromGroup.get("FULL_NAME").value)
+      formData.append("FULL_NAME", this.myFromGroup.get("FULL_NAME").value);
+    if (this.myFromGroup.get("PHONE").value)
+      formData.append("PHONE", this.myFromGroup.get("PHONE").value);
+    if (this.myFromGroup.get("EMAIL").value)
+      formData.append("EMAIL", this.myFromGroup.get("EMAIL").value);
+    if (this.myFromGroup.get("FULL_ADDRESS").value)
+      formData.append("FULL_ADDRESS", this.myFromGroup.get("FULL_ADDRESS").value);
+    var i = 0;
+    this.resourceImages.forEach(fileObj => {
+      //console.log(fileObj.name);
+      formData.append('file2Upload' + i++, fileObj.file, fileObj.name);
+      //gui tung file hoac tat ca cac file
+    });
+    //gui lenh user/save 
+    let loading = this.loadingCtrl.create({
+      content: 'Saving user info...'
+    });
+    loading.present();
+
+    this.apiService.editUser(formData)
+      .then(data => {
+        loading.dismiss();
+        this.toastCtrl.create({
+          message: "result: " + JSON.stringify(data),
+          duration: 1000,
+          position: 'middle'
+        }).present();
+        //quay tro lai trang chu roi nhe
+        this.navCtrl.setRoot(LoginPage);
+
+      })
+      .catch(err => {
+        loading.dismiss();
+        this.toastCtrl.create({
+          message: "result: " + JSON.stringify(err),
+          duration: 5000,
+          position: 'bottom'
+        }).present();
+      }
+      );
+
+  }
+}

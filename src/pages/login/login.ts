@@ -72,7 +72,7 @@ export class LoginPage {
         loading.dismiss();
           this.toastCtrl.create({
             message:"result: " + JSON.stringify(token),
-            duration: 5000,
+            duration: 1000,
             position: 'middle'
           }).present();
         
@@ -116,7 +116,7 @@ export class LoginPage {
       //console.log(this.apiService.getUserInfoSetting());
       this.toastCtrl.create({
         message:"result: " + JSON.stringify(this.apiService.getUserInfoSetting()),
-        duration: 5000,
+        duration: 1000,
         position: 'middle'
       }).present();
 

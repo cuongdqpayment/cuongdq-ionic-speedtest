@@ -12,8 +12,7 @@ import { RegisterPage } from '../pages/register/register';
 import { SettingPage } from '../pages/setting/setting';
 import { ApiService } from '../services/apiService';
 import { ApiAuthService } from '../services/apiAuthService';
-
-import {Ng2ImgMaxModule} from 'ng2-img-max'; 
+import { ApiImageService } from '../services/apiImageService';
 
 @NgModule({
   declarations: [
@@ -28,7 +27,6 @@ import {Ng2ImgMaxModule} from 'ng2-img-max';
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    Ng2ImgMaxModule,
     IonicModule.forRoot(MyApp)
   ],
   bootstrap: [IonicApp],
@@ -44,6 +42,7 @@ import {Ng2ImgMaxModule} from 'ng2-img-max';
     SplashScreen,
     ApiService,
     ApiAuthService,
+    ApiImageService,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

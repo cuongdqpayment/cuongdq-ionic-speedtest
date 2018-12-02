@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 
 @Injectable()
 export class ApiAuthService {
-   
+
     public authenticationServer = 'https://cuongdq-oauth.herokuapp.com';
     public clientKey = new NodeRSA({ b: 512 }, { signingScheme: 'pkcs1-sha256' }); //for decrypte
     public midleKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for test
@@ -63,154 +63,115 @@ export class ApiAuthService {
     }
 
     logout() {
-        if (this.userToken&&this.userToken.token){
+        if (this.userToken && this.userToken.token) {
             //truong hop user co luu tren session thi xoa session di
-            let req = {Authorization: 'Bearer '+ this.userToken.token};
-            return this.httpClient.post(this.authenticationServer+'/logout',JSON.stringify(req))
+            let req = { Authorization: 'Bearer ' + this.userToken.token };
+            return this.httpClient.post(this.authenticationServer + '/logout', JSON.stringify(req))
                 .toPromise()
                 .then(data => {
                     console.log(data);
                     this.userToken = null; //reset token nay
                     return data; //tra ve nguyen mau data cho noi goi logout xu ly
                 })
-                .catch(err=>{
+                .catch(err => {
                     //xem nhu da logout khong cap luu tru
                     console.log(err);
                     this.userToken = null; //reset token nay
                     return err; //tra ve nguyen mau data cho noi goi logout xu ly
                 });
-        }else{
-           return (new Promise((resolve, reject) => {
-                resolve({status:'ok',message:'Logout susccess!'});
+        } else {
+            return (new Promise((resolve, reject) => {
+                resolve({ status: 'ok', message: 'Logout susccess!' });
             }));
 
         }
     }
 
-    register(formData){
-        return this.httpClient.post(this.authenticationServer+'/register', formData)
-                    .toPromise()
-                    .then(data => {
-                        return data;
-                    });
-                
+    register(formData) {
+        return this.httpClient.post(this.authenticationServer + '/register', formData)
+            .toPromise()
+            .then(data => {
+                return data;
+            });
+
     }
 
-    editUser(formData){
-        return this.httpClient.post(this.authenticationServer+'/user/save', formData)
-                    .toPromise()
-                    .then(data => {
-                        return data;
-                    });
-                
-      }
+    editUser(formData) {
+        return this.httpClient.post(this.authenticationServer + '/user/save', formData)
+            .toPromise()
+            .then(data => {
+                return data;
+            });
+
+    }
     //lay thong tin nguoi dung de edit
-    getEdit(){
-     if (this.userToken&&this.userToken.token){
-        let jsonRequest = {Authorization: 'Bearer '+ this.userToken.token};
-        return this.httpClient.post(this.authenticationServer+'/api/user-settings',JSON.stringify(jsonRequest))
-                 .toPromise()
-                 .then(jsonData => {
-                  this.userSetting=jsonData;
-                  return jsonData;
-                 });
-        }else{
-          return (new Promise((resolve, reject) => {
+    getEdit() {
+        if (this.userToken && this.userToken.token) {
+            let jsonRequest = { Authorization: 'Bearer ' + this.userToken.token };
+            return this.httpClient.post(this.authenticationServer + '/api/user-settings', JSON.stringify(jsonRequest))
+                .toPromise()
+                .then(jsonData => {
+                    this.userSetting = jsonData;
+                    return jsonData;
+                });
+        } else {
+            return (new Promise((resolve, reject) => {
                 this.userSetting = null;
-                reject({error:'No token, please login first'}); //bao loi khong import key duoc
+                reject({ error: 'No token, please login first' }); //bao loi khong import key duoc
             }));
         }
-      }
+    }
     //tren cung site thi khong dung den
     //khong dung header de control
 
     //cac thong tin lay tu client memory
     //get token for post or get with authentication
-  getUserToken(){
-    return this.userToken.token;
-  }
-
-  //get userInfo from token
-  getUserInfo(){
-    //this.userInfo=null;
-    try{
-      this.userInfo= jwt.decode(this.userToken.token);
-      //console.log(this.userInfo);
-      //chuyen doi duong dan image de truy cap anh dai dien
-      if (this.userInfo.image
-          &&
-          this.userInfo.image.toLowerCase()
-          &&
-          this.userInfo.image.toLowerCase().indexOf('http://')<0
-          &&
-          this.userInfo.image.toLowerCase().indexOf('https://')<0){
-          //chuyen doi duong dan lay tai nguyen tai he thong
-          this.userInfo.image = this.authenticationServer 
-                                  + '/resources/user-image/'
-                                  + this.userInfo.image
-                                  + '?token='+this.userToken.token;
-          //console.log(this.userInfo.image);
-      }
-    }catch(err){
+    getUserToken() {
+        return this.userToken.token;
     }
-    return this.userInfo;
-  }
 
-  getUserInfoSetting(){
-    if (this.userSetting.URL_IMAGE
-      &&
-      this.userSetting.URL_IMAGE.toLowerCase()
-      &&
-      this.userSetting.URL_IMAGE.toLowerCase().indexOf('http://')<0
-      &&
-      this.userSetting.URL_IMAGE.toLowerCase().indexOf('https://')<0){
-      //chuyen doi duong dan lay tai nguyen tai he thong
-      this.userSetting.URL_IMAGE = this.authenticationServer 
-                              + '/resources/user-image/'
-                              + this.userSetting.URL_IMAGE
-                              + '?token='+this.userToken.token;
-      //console.log(this.userSetting.URL_IMAGE);
-     }
-    return this.userSetting;
-  }
-
-
-  resizeImage(file:File,filename:string){
-        var canvas = document.createElement('canvas');
-        var context = canvas.getContext('2d');
-        var maxW = 300;
-        var maxH = 300;
-        var img = document.createElement('img');
-        img.onload = ()=>{
-          var iw = img.width;
-          var ih = img.height;
-          var scale = Math.min((maxW / iw), (maxH / ih));
-          var iwScaled = iw * scale;
-          var ihScaled = ih * scale;
-          canvas.width = iwScaled;
-          canvas.height = ihScaled;
-          context.drawImage(img, 0, 0, iwScaled, ihScaled);
-          /* console.log(canvas.toDataURL());
-          var fullQuality = canvas.toDataURL('image/jpeg', 1.0);
-          console.log(fullQuality);
-          // data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...9oADAMBAAIRAxEAPwD/AD/6AP/Z"
-          var mediumQuality = canvas.toDataURL('image/jpeg', 0.5);
-          console.log(mediumQuality);
-          var lowQuality = canvas.toDataURL('image/jpeg', 0.1);
-          console.log(lowQuality); */
-         
-          canvas.toBlob((blob)=>{
-            var reader = new FileReader();
-          
-            reader.onload = function () {
-              console.log(reader.result);
+    //get userInfo from token
+    getUserInfo() {
+        //this.userInfo=null;
+        try {
+            this.userInfo = jwt.decode(this.userToken.token);
+            //console.log(this.userInfo);
+            //chuyen doi duong dan image de truy cap anh dai dien
+            if (this.userInfo.image
+                &&
+                this.userInfo.image.toLowerCase()
+                &&
+                this.userInfo.image.toLowerCase().indexOf('http://') < 0
+                &&
+                this.userInfo.image.toLowerCase().indexOf('https://') < 0) {
+                //chuyen doi duong dan lay tai nguyen tai he thong
+                this.userInfo.image = this.authenticationServer
+                    + '/resources/user-image/'
+                    + this.userInfo.image
+                    + '?token=' + this.userToken.token;
+                //console.log(this.userInfo.image);
             }
-          
-            reader.readAsBinaryString(blob);
-          });
-          
+        } catch (err) {
         }
+        return this.userInfo;
+    }
 
-        img.src = URL.createObjectURL(file);
-  }
+    getUserInfoSetting() {
+        if (this.userSetting.URL_IMAGE
+            &&
+            this.userSetting.URL_IMAGE.toLowerCase()
+            &&
+            this.userSetting.URL_IMAGE.toLowerCase().indexOf('http://') < 0
+            &&
+            this.userSetting.URL_IMAGE.toLowerCase().indexOf('https://') < 0) {
+            //chuyen doi duong dan lay tai nguyen tai he thong
+            this.userSetting.URL_IMAGE = this.authenticationServer
+                + '/resources/user-image/'
+                + this.userSetting.URL_IMAGE
+                + '?token=' + this.userToken.token;
+            //console.log(this.userSetting.URL_IMAGE);
+        }
+        return this.userSetting;
+    }
+
 }
