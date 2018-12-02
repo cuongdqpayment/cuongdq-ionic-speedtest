@@ -5,7 +5,7 @@ md	720px	Set grid width to 720px when (min-width: 768px)
 lg	960px	Set grid width to 960px when (min-width: 992px)
 xl	1140px	Set grid width to 1140px when (min-width: 1200px)
 -->
-<ion-split-pane when="md">
+<!-- <ion-split-pane when="md">
     <ion-menu [content]="content" *ngIf="true">
         <ion-header>
             <ion-toolbar color="primary">
@@ -50,7 +50,6 @@ xl	1140px	Set grid width to 1140px when (min-width: 1200px)
                 </button>
             </ion-list>
         </ion-content>
-    </ion-menu>
-    <!-- Disable swipe-to-go-back because it's poor UX to combine STGB with side menus -->
+    </ion-menu> -->
     <ion-nav [root]="rootPage" #content main swipeBackEnabled="false"></ion-nav>
-</ion-split-pane>
+<!-- </ion-split-pane> -->

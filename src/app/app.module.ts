@@ -11,6 +11,7 @@ import { LoginPage } from '../pages/login/login';
 import { RegisterPage } from '../pages/register/register';
 import { SettingPage } from '../pages/setting/setting';
 import { ApiService } from '../services/apiService';
+import { ApiAuthService } from '../services/apiAuthService';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { ApiService } from '../services/apiService';
     StatusBar,
     SplashScreen,
     ApiService,
+    ApiAuthService,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

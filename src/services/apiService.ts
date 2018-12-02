@@ -190,6 +190,7 @@ export class ApiService {
 
   //get userInfo from token
   getUserInfo(){
+    //this.userInfo=null;
     try{
       this.userInfo= jwt.decode(this.userToken.token);
       //console.log(this.userInfo);

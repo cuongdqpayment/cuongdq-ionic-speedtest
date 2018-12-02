@@ -27,7 +27,8 @@ var RSAKeyObj; //bien public de su dung
 var tokenSign = (req) => {
   let signTime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
   if (req.user&&req.user.USERNAME){
-    return jwt.sign({
+    //truong hop nay neu luu session? hoac luu db?
+    let tokenSign = jwt.sign({
                     username: req.user.USERNAME,
                     nickname: (req.user.DISPLAY_NAME)?req.user.DISPLAY_NAME:'',
                     image: (req.user.URL_IMAGE)?req.user.URL_IMAGE:'',//, //thong tin anh cua nguoi su dung
@@ -39,6 +40,10 @@ var tokenSign = (req) => {
                       expiresIn: '24h' // expires in 24 hours
                     }
                   );
+      //save session or db de khi logout thi xoa di
+
+      return tokenSign;
+
   }else{
     return jwt.sign({
       req_device:req.headers["user-agent"],

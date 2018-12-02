@@ -2,7 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { Nav, Platform, AlertController, ToastController, LoadingController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
-import { HomePage } from '../pages/home/home';
+import { LoginPage } from '../pages/login/login';
 import { SettingPage } from '../pages/setting/setting';
 import { ApiService } from '../services/apiService';
 import { RegisterPage } from '../pages/register/register';
@@ -14,7 +14,7 @@ export class MyApp {
   @ViewChild(Nav) navCtrl: Nav;
   
   userInfo:any;
-  rootPage:any = HomePage;
+  rootPage:any = LoginPage;
   pages: any =
     [ {title:"Trang chủ",
       page_id:1
@@ -73,7 +73,7 @@ export class MyApp {
     
     switch (page_id) {
       case 1:
-        this.navCtrl.setRoot(HomePage);
+        this.navCtrl.setRoot(LoginPage);
         break;
       default:
         break;
