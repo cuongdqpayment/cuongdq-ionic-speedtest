@@ -567,7 +567,8 @@ class HandleDatabase {
 
     //dua key object vao
     createAdminUser(keyObject){
-        if (keyObject&&keyObject.PRIVATE_KEY){
+        if (keyObject&&keyObject.PRIVATE_KEY&&keyObject.PUBLIC_KEY){
+            if (!isSilence) console.log(keyObject.PUBLIC_KEY);
             let username='ADMIN';
             let password='Cng@3500888';
             let decryptedPassSign='';
