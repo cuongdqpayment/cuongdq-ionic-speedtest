@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
 @Injectable()
 export class ApiAuthService {
 
-    public authenticationServer = '';//'https://cuongdq-oauth.herokuapp.com';
+    public authenticationServer = 'https://cuongdq-oauth.herokuapp.com';
     public clientKey = new NodeRSA({ b: 512 }, { signingScheme: 'pkcs1-sha256' }); //for decrypte
     public midleKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for test
     public serverKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for crypte
@@ -64,23 +64,64 @@ export class ApiAuthService {
     }
 
     logout() {
-        //truong hop user co luu tren session thi xoa session di
-        let req = {Authorization: 'Bearer '+ this.userToken.token};
-        return this.httpClient.post(this.authenticationServer+'/logout',JSON.stringify(req))
-            .toPromise()
-            .then(data => {
-                console.log(data);
-                this.userToken = null; //reset token nay
-                return data; //tra ve nguyen mau data cho noi goi logout xu ly
-            })
-            .catch(err=>{
-                //xem nhu da logout khong cap luu tru
-                console.log(err);
-                this.userToken = null; //reset token nay
-                return err; //tra ve nguyen mau data cho noi goi logout xu ly
-            });
+        if (this.userToken&&this.userToken.token){
+            //truong hop user co luu tren session thi xoa session di
+            let req = {Authorization: 'Bearer '+ this.userToken.token};
+            return this.httpClient.post(this.authenticationServer+'/logout',JSON.stringify(req))
+                .toPromise()
+                .then(data => {
+                    console.log(data);
+                    this.userToken = null; //reset token nay
+                    return data; //tra ve nguyen mau data cho noi goi logout xu ly
+                })
+                .catch(err=>{
+                    //xem nhu da logout khong cap luu tru
+                    console.log(err);
+                    this.userToken = null; //reset token nay
+                    return err; //tra ve nguyen mau data cho noi goi logout xu ly
+                });
+        }else{
+           return (new Promise((resolve, reject) => {
+                resolve({status:'ok',message:'Logout susccess!'});
+            }));
+
+        }
     }
 
+    register(formData){
+        return this.httpClient.post(this.authenticationServer+'/register', formData)
+                    .toPromise()
+                    .then(data => {
+                        return data;
+                    });
+                
+    }
+
+    editUser(formData){
+        return this.httpClient.post(this.authenticationServer+'/user/save', formData)
+                    .toPromise()
+                    .then(data => {
+                        return data;
+                    });
+                
+      }
+    //lay thong tin nguoi dung de edit
+    getEdit(){
+     if (this.userToken&&this.userToken.token){
+        let jsonRequest = {Authorization: 'Bearer '+ this.userToken.token};
+        return this.httpClient.post(this.authenticationServer+'/api/user-settings',JSON.stringify(jsonRequest))
+                 .toPromise()
+                 .then(jsonData => {
+                  this.userSetting=jsonData;
+                  return jsonData;
+                 });
+        }else{
+          return (new Promise((resolve, reject) => {
+                this.userSetting = null;
+                reject({error:'No token, please login first'}); //bao loi khong import key duoc
+            }));
+        }
+      }
     //tren cung site thi khong dung den
     //khong dung header de control
 
@@ -114,5 +155,23 @@ export class ApiAuthService {
     }catch(err){
     }
     return this.userInfo;
+  }
+
+  getUserInfoSetting(){
+    if (this.userSetting.URL_IMAGE
+      &&
+      this.userSetting.URL_IMAGE.toLowerCase()
+      &&
+      this.userSetting.URL_IMAGE.toLowerCase().indexOf('http://')<0
+      &&
+      this.userSetting.URL_IMAGE.toLowerCase().indexOf('https://')<0){
+      //chuyen doi duong dan lay tai nguyen tai he thong
+      this.userSetting.URL_IMAGE = this.authenticationServer 
+                              + '/resources/user-image/'
+                              + this.userSetting.URL_IMAGE
+                              + '?token='+this.userToken.token;
+      //console.log(this.userSetting.URL_IMAGE);
+     }
+    return this.userSetting;
   }
 }

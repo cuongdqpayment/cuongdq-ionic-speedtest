@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { NavController, ToastController, LoadingController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
-import { ApiService } from '../../services/apiService';
-import { HomePage } from '../home/home';
+import { ApiAuthService } from '../../services/apiAuthService';
+import { LoginPage } from '../login/login';
 
 @Component({
   selector: 'page-register',
@@ -20,10 +20,10 @@ export class RegisterPage {
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private formBuilder: FormBuilder,
-    private apiService: ApiService) { }
+    private apiService: ApiAuthService) { }
 
   ngOnInit() {
-    this.apiService.getServerKey()
+    this.apiService.getServerPublicRSAKey()
     .then(pk=>this.serverKey=pk)
     .catch(err=>console.log(err));
 
@@ -52,7 +52,7 @@ export class RegisterPage {
     });
     loading.present();
 
-    this.apiService.postRegister(formData)
+    this.apiService.register(formData)
     .then(data=>{
         loading.dismiss();
         this.toastCtrl.create({
@@ -60,7 +60,7 @@ export class RegisterPage {
           duration: 1000,
           position: 'middle'
         }).present();
-        this.navCtrl.setRoot(HomePage);
+        this.navCtrl.setRoot(LoginPage);
       })
     .catch(err=>{
       loading.dismiss();

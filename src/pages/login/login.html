@@ -6,20 +6,30 @@
   </ion-navbar>
 </ion-header>
 <ion-content padding class="card-background-page">
-   <ion-item *ngIf="serverTokenUserInfo">
+   <ion-item *ngIf="isShowInfo">
         <ion-grid>
             <ion-row>
-                <ion-col col-12>
+                <ion-col col-12 col-xl-4 col-lg-6 col-sm-12>
                     <ion-card>
-                        <img [src]="serverTokenUserInfo?.image"/>
-                        {{serverTokenUserInfo?.username}}
-                        {{serverTokenUserInfo?.nickname}}
-                        {{serverTokenUserInfo?.req_time}}
+                        <img *ngIf="(serverTokenUserInfo?.image)" [src]="serverTokenUserInfo?.image"/>
+                        <ion-card-content>
+                            <ion-card-title>
+                                {{serverTokenUserInfo?.username}}
+                            </ion-card-title>
+                            <p>{{serverTokenUserInfo?.nickname}}</p>
+                            <p>{{serverTokenUserInfo?.req_time}}</p>
+                        </ion-card-content>
                         <ion-row>
                             <ion-col>
                                 <button ion-button type="button" clear small color="secondary" icon-start (click)="callLogout()">
                                     <ion-icon name='backspace' ios="ios-backspace" md="md-backspace"></ion-icon>
                                     Logout
+                                </button>
+                            </ion-col>
+                            <ion-col text-right>
+                                <button ion-button type="button" clear small color="secondary" icon-start (click)="callEdit()">
+                                    <ion-icon name='share-alt'></ion-icon>
+                                    Edit
                                 </button>
                             </ion-col>
                         </ion-row>
@@ -28,7 +38,7 @@
             </ion-row>
         </ion-grid>
   </ion-item>
-  <form (ngSubmit)="onSubmit()" [formGroup]="myFromGroup">
+  <form (ngSubmit)="onSubmit()" [formGroup]="myFromGroup" *ngIf="!(isShowInfo)">
     <ion-card col-12 col-xl-4 col-lg-6 col-sm-12>
       <ion-item>
         <ion-label floating>Username</ion-label>

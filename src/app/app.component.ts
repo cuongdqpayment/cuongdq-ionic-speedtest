@@ -4,7 +4,7 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { LoginPage } from '../pages/login/login';
 import { SettingPage } from '../pages/setting/setting';
-import { ApiService } from '../services/apiService';
+import { ApiAuthService } from '../services/apiAuthService';
 import { RegisterPage } from '../pages/register/register';
 
 @Component({
@@ -15,28 +15,7 @@ export class MyApp {
   
   userInfo:any;
   rootPage:any = LoginPage;
-  pages: any =
-    [ {title:"Trang chủ",
-      page_id:1
-      },
-      {title:"Tin tức",
-      page_id:2
-      },
-      {title:"Upload",
-      page_id:3
-      },
-      {title:"trang 4",
-      page_id:4
-      },
-      {title:"trang 5",
-      page_id:5
-      },
-      {title:"trang 6",
-      page_id:6
-      },
-      {title:"Tìm kiếm",
-      page_id:99
-      }];
+ 
 
   serverKey:any;
 
@@ -45,7 +24,7 @@ export class MyApp {
               private alertCtrl: AlertController,
               private loadingCtrl: LoadingController,
               private toastCtrl: ToastController,
-              private apiService: ApiService,
+              private apiService: ApiAuthService,
               private splashScreen: SplashScreen
             ) {
   }
@@ -56,7 +35,7 @@ export class MyApp {
       this.splashScreen.hide();
     });
 
-    this.apiService.getServerKey()
+    this.apiService.getServerPublicRSAKey()
     .then(pk=>{ 
       this.serverKey = pk;
     })
@@ -141,7 +120,7 @@ export class MyApp {
     });
     loading.present();
 
-    this.apiService.postLogin(formData)
+    this.apiService.login(formData)
     .then(token=>{
       if (token){
         loading.dismiss();
@@ -182,7 +161,7 @@ export class MyApp {
   setting(){
     //neu cung site thi su dung Header de truyen token
     //neu khac site thi phai su dung param hoac post json token
-    this.apiService.postUserSettings()
+    this.apiService.getEdit()
     .then(user=>{
       //console.log(this.apiService.getUserInfoSetting());
       this.toastCtrl.create({

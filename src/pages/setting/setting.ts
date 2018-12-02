@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { NavController, ToastController, LoadingController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
-import { ApiService } from '../../services/apiService';
-import { HomePage } from '../home/home';
+import { ApiAuthService } from '../../services/apiAuthService';
+import { LoginPage } from '../login/login';
 
 @Component({
   selector: 'page-setting',
@@ -21,10 +21,10 @@ export class SettingPage {
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private formBuilder: FormBuilder,
-    private apiService: ApiService) { }
+    private apiService: ApiAuthService) { }
 
   ngOnInit() {
-    this.apiService.getServerKey()
+    this.apiService.getServerPublicRSAKey()
       .then(pk => this.serverKey = pk)
       .catch(err => console.log(err));
 
@@ -104,7 +104,7 @@ export class SettingPage {
       });
       loading.present();
       
-      this.apiService.postUserSave(formData)
+      this.apiService.editUser(formData)
         .then(data => {
           loading.dismiss();
           this.toastCtrl.create({
@@ -113,7 +113,7 @@ export class SettingPage {
             position: 'middle'
           }).present();
           //quay tro lai trang chu roi nhe
-          this.navCtrl.setRoot(HomePage);
+          this.navCtrl.setRoot(LoginPage);
           
         })
         .catch(err => {
