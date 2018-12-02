@@ -31,11 +31,6 @@ module.exports = new DDDoS({
                             queueSize: 4 // If request limit is exceeded, new requests are added to the queue 
                         },
                         { // Ngan chan login bang may tu dong nhanh qua, chi yeu cau 1 phut login 1 lan
-                            //1. Lay public-key
-                            string: "/key-json",
-                            maxWeight: 1
-                        },
-                        { // Ngan chan login bang may tu dong nhanh qua, chi yeu cau 1 phut login 1 lan
                             string: "/login",
                             maxWeight: 1
                         },

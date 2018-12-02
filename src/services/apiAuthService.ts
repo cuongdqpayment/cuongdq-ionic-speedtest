@@ -5,9 +5,6 @@ import 'rxjs/add/operator/map'
 import NodeRSA from 'node-rsa';
 import jwt from 'jsonwebtoken';
 
-import {Ng2ImgMaxService} from 'ng2-img-max'; 
-
-
 @Injectable()
 export class ApiAuthService {
    
@@ -21,8 +18,7 @@ export class ApiAuthService {
     public userInfo: any;
 
 
-    constructor(private httpClient: HttpClient,
-                private imageService: Ng2ImgMaxService) {
+    constructor(private httpClient: HttpClient) {
         //key nay de test thu noi bo
         this.midleKey.importKey(this.clientKey.exportKey('public'));
     }
@@ -179,15 +175,42 @@ export class ApiAuthService {
   }
 
 
-  processImage(file,filename){
-   return this.imageService.resizeImage(file,300,300)
-    .toPromise()
-    .then(data=>{
-        console.log(data);
-        return new File(data,filename);
-    })
-    .catch(err=>{
-        console.log(err);
-    })
+  resizeImage(file:File,filename:string){
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        var maxW = 300;
+        var maxH = 300;
+        var img = document.createElement('img');
+        img.onload = ()=>{
+          var iw = img.width;
+          var ih = img.height;
+          var scale = Math.min((maxW / iw), (maxH / ih));
+          var iwScaled = iw * scale;
+          var ihScaled = ih * scale;
+          canvas.width = iwScaled;
+          canvas.height = ihScaled;
+          context.drawImage(img, 0, 0, iwScaled, ihScaled);
+          /* console.log(canvas.toDataURL());
+          var fullQuality = canvas.toDataURL('image/jpeg', 1.0);
+          console.log(fullQuality);
+          // data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...9oADAMBAAIRAxEAPwD/AD/6AP/Z"
+          var mediumQuality = canvas.toDataURL('image/jpeg', 0.5);
+          console.log(mediumQuality);
+          var lowQuality = canvas.toDataURL('image/jpeg', 0.1);
+          console.log(lowQuality); */
+         
+          canvas.toBlob((blob)=>{
+            var reader = new FileReader();
+          
+            reader.onload = function () {
+              console.log(reader.result);
+            }
+          
+            reader.readAsBinaryString(blob);
+          });
+          
+        }
+
+        img.src = URL.createObjectURL(file);
   }
 }

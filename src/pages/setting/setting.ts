@@ -56,19 +56,43 @@ export class SettingPage {
       const files: { [key: string]: File } = event.target.files;
       for (let key in files) { //index, length, item
         if (!isNaN(parseInt(key))) {
-          
-          console.log('files[key]');
-          console.log(files[key]);
-          
-            this.apiService.processImage(files[key],files[key].name)
-            .then(fileResized=>{
-              console.log('fileResized');
-              console.log(fileResized);
-            })
-            .catch(err=>{
-              console.log(err);
-            })
-          /* let reader = new FileReader();
+         
+
+          /* var canvas = document.createElement('canvas');
+          var context = canvas.getContext('2d');
+          var maxW = 300;
+          var maxH = 300;
+          var img = document.createElement('img');
+          img.onload = ()=>{
+            var iw = img.width;
+            var ih = img.height;
+            var scale = Math.min((maxW / iw), (maxH / ih));
+            var iwScaled = iw * scale;
+            var ihScaled = ih * scale;
+            canvas.width = iwScaled;
+            canvas.height = ihScaled;
+            context.drawImage(img, 0, 0, iwScaled, ihScaled);
+            canvas.toBlob((blob)=>{
+              var reader = new FileReader();
+              reader.onload = () => {
+                //var url = URL.createObjectURL(reader.result);
+                console.log(reader.result);
+                this.resourceImages.push(
+                  {
+                    imageViewer: reader.result,//canvas.toDataURL(),//reader.result, //ket qua doc file ra binary can resize 
+                    file: files[key], //doi tuong file goc can resize lai
+                    name: files[key].name //ten file upload len
+                  }
+                  );
+                  this.isImageViewer = true;
+                } 
+              reader.readAsArrayBuffer(blob);
+            }); 
+          }
+          img.src = URL.createObjectURL(files[key]); */
+
+      
+          let reader = new FileReader();
           reader.readAsDataURL(files[key]);
           reader.onload = (kq: any) => {
             //resize truoc khi upload
@@ -81,7 +105,7 @@ export class SettingPage {
               }
               );
               this.isImageViewer = true;
-            } */
+            }
 
           }
         }//
