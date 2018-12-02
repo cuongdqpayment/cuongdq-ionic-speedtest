@@ -4,6 +4,8 @@ import { FormGroup, FormBuilder } from '@angular/forms';
 import { ApiAuthService } from '../../services/apiAuthService';
 import { LoginPage } from '../login/login';
 
+//import sharp from 'sharp';
+
 @Component({
   selector: 'page-setting',
   templateUrl: 'setting.html'
@@ -54,18 +56,33 @@ export class SettingPage {
       const files: { [key: string]: File } = event.target.files;
       for (let key in files) { //index, length, item
         if (!isNaN(parseInt(key))) {
-          let reader = new FileReader();
+          
+          console.log('files[key]');
+          console.log(files[key]);
+          
+            this.apiService.processImage(files[key],files[key].name)
+            .then(fileResized=>{
+              console.log('fileResized');
+              console.log(fileResized);
+            })
+            .catch(err=>{
+              console.log(err);
+            })
+          /* let reader = new FileReader();
           reader.readAsDataURL(files[key]);
           reader.onload = (kq: any) => {
+            //resize truoc khi upload
+            //resizeImage.resize()
             this.resourceImages.push(
               {
-                imageViewer: kq.target.result, //ket qua doc file ra binary
-                file: files[key], //doi tuong file goc
+                imageViewer: kq.target.result, //ket qua doc file ra binary can resize 
+                file: files[key], //doi tuong file goc can resize lai
                 name: files[key].name //ten file upload len
               }
               );
               this.isImageViewer = true;
-            }
+            } */
+
           }
         }//
       }

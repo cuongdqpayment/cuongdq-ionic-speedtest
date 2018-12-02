@@ -13,6 +13,8 @@ import { SettingPage } from '../pages/setting/setting';
 import { ApiService } from '../services/apiService';
 import { ApiAuthService } from '../services/apiAuthService';
 
+import {Ng2ImgMaxModule} from 'ng2-img-max'; 
+
 @NgModule({
   declarations: [
     MyApp,
@@ -26,6 +28,7 @@ import { ApiAuthService } from '../services/apiAuthService';
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
+    Ng2ImgMaxModule,
     IonicModule.forRoot(MyApp)
   ],
   bootstrap: [IonicApp],

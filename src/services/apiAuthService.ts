@@ -1,14 +1,16 @@
 import { HttpClient } from '@angular/common/http';
-import { DomSanitizer } from '@angular/platform-browser';
 import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/map'
 
 import NodeRSA from 'node-rsa';
 import jwt from 'jsonwebtoken';
 
+import {Ng2ImgMaxService} from 'ng2-img-max'; 
+
+
 @Injectable()
 export class ApiAuthService {
-
+   
     public authenticationServer = 'https://cuongdq-oauth.herokuapp.com';
     public clientKey = new NodeRSA({ b: 512 }, { signingScheme: 'pkcs1-sha256' }); //for decrypte
     public midleKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' }); //for test
@@ -19,7 +21,8 @@ export class ApiAuthService {
     public userInfo: any;
 
 
-    constructor(public httpClient: HttpClient, public sanitizer: DomSanitizer) {
+    constructor(private httpClient: HttpClient,
+                private imageService: Ng2ImgMaxService) {
         //key nay de test thu noi bo
         this.midleKey.importKey(this.clientKey.exportKey('public'));
     }
@@ -173,5 +176,18 @@ export class ApiAuthService {
       //console.log(this.userSetting.URL_IMAGE);
      }
     return this.userSetting;
+  }
+
+
+  processImage(file,filename){
+   return this.imageService.resizeImage(file,300,300)
+    .toPromise()
+    .then(data=>{
+        console.log(data);
+        return new File(data,filename);
+    })
+    .catch(err=>{
+        console.log(err);
+    })
   }
 }
