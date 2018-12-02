@@ -19,10 +19,21 @@ module.exports = new DDDoS({
                             queueSize: 4 // If request limit is exceeded, new requests are added to the queue 
                         },
                         { // Allow 4 requests accessing the application resource per checkInterval 
+                            regexp: "/api/*",
+                            flags: "i",
+                            maxWeight: 4,
+                            queueSize: 4 // If request limit is exceeded, new requests are added to the queue 
+                        },
+                        { // Allow 4 requests accessing the application resource per checkInterval 
                             regexp: "/resources/*",
                             flags: "i",
                             maxWeight: 4,
                             queueSize: 4 // If request limit is exceeded, new requests are added to the queue 
+                        },
+                        { // Ngan chan login bang may tu dong nhanh qua, chi yeu cau 1 phut login 1 lan
+                            //1. Lay public-key
+                            string: "/key-json",
+                            maxWeight: 1
                         },
                         { // Ngan chan login bang may tu dong nhanh qua, chi yeu cau 1 phut login 1 lan
                             string: "/login",
@@ -30,6 +41,10 @@ module.exports = new DDDoS({
                         },
                         { // Ngan chan dang ky user tu dong nhanh qua, chi yeu cau 1 phut 1 lan dang ky user
                             string: "/register",
+                            maxWeight: 1
+                        },
+                        { // Ngan chan dang ky user tu dong nhanh qua, chi yeu cau 1 phut 1 lan dang ky user
+                            string: "/user/save",
                             maxWeight: 1
                         },
                         { // Allow up to 16 other requests per check interval.
