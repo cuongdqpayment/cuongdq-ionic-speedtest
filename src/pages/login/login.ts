@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController,AlertController,LoadingController,ToastController } from 'ionic-angular';
+import { NavController,LoadingController,ToastController } from 'ionic-angular';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { RegisterPage } from '../register/register';
 import { SettingPage } from '../setting/setting';
@@ -21,7 +21,7 @@ export class LoginPage {
   constructor(public navCtrl: NavController,
               private formBuilder: FormBuilder,
               //private alertCtrl: AlertController,
-              //private loadingCtrl: LoadingController,
+              private loadingCtrl: LoadingController,
               private toastCtrl: ToastController,
               private apiService: ApiAuthService) { }
 
@@ -61,16 +61,39 @@ export class LoginPage {
     formData.append("password",passEncrypted);
     
     //gui lenh login 
+    let loading = this.loadingCtrl.create({
+      content: 'Saving user info...'
+    });
+    loading.present();
+
     this.apiService.login(formData)
     .then(token=>{
       if (token){
+        loading.dismiss();
+          this.toastCtrl.create({
+            message:"result: " + JSON.stringify(token),
+            duration: 5000,
+            position: 'middle'
+          }).present();
+        
         //console.log(this.apiService.getUserInfo());
         this.serverTokenUserInfo = this.apiService.getUserInfo();
         this.isShowInfo=true;
         //this.navCtrl.setRoot(LoginPage);
+
+      }else{
+        throw {code:403,message:'No token'}
       }
     })
-    .catch(err=>console.log(err));
+    .catch(err=>{
+      loading.dismiss();
+      this.toastCtrl.create({
+        message:"result: " + JSON.stringify(err),
+        duration: 5000,
+        position: 'bottom'
+      }).present();
+    }
+    );
     
   }
 
