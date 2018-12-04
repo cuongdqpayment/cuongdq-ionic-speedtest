@@ -5,9 +5,9 @@ const url = require('url');
 const NodeRSA = require('node-rsa');
 
 //chen 2 doi tuong su dung cho sqlite - cuongdq
-const AppDAO = require('./lib/sqlite-dao');
-const dataType = require('./lib/sqlite-datatype');
-const config = require('./lib/config');
+const SQLiteDAO = require('./sqlite-dao');
+const dataType = require('./sqlite-datatype');
+const config = require('./config');
 const isSilence = config.keep_silence;
 
 const dirDB = 'db';
@@ -15,10 +15,10 @@ const dirDB = 'db';
 if (!fs.existsSync(dirDB)) {
     fs.mkdirSync(dirDB);
 }
-var db = new AppDAO('./' + dirDB + '/'+config.database_name);
+const db = new SQLiteDAO('./' + dirDB + '/'+config.database_name);
 
 //bien lay key sau nay qua class
-var serverKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' });
+const serverKey = new NodeRSA(null, { signingScheme: 'pkcs1-sha256' });
 var RSAKeyRow;
 class HandleDatabase {
     //khoi tao cac bang luu so lieu
@@ -473,50 +473,6 @@ class HandleDatabase {
         }
     }
 
-    //log truy cap tu request
-    logAccess(req, res, next){
-       //doan lay thong tin cac bien su dung sau nay
-    var reqUrlString = req.url;
-    var method = req.method;
-    var pathName = decodeURIComponent(url.parse(reqUrlString, true, false).pathname);
-    var reqFullHost = req.protocol + '://' + req.get('host');
-    
-    var log = {
-        name: 'LOG_ACCESS',
-        cols: [{
-            name: 'IP',
-            value: req.ip
-        },
-        {
-            name: 'ACCESS_INFO',
-            value: method + " " + reqFullHost + '/' + pathName
-        },
-        {
-            name: 'DEVICE_INFO',
-            value: req.headers["user-agent"]
-        }
-        ],
-        wheres: [{
-            name: 'IP',
-            value: req.ip
-        }]
-    };
-    db.insert(log)
-      .then(data => {
-        if (!isSilence) console.log(data)
-        }
-      )
-      .catch(err=>{
-          db.runSql("update LOG_ACCESS set LOG_COUNT=LOG_COUNT+1 where IP='"+req.ip+"'")
-          .then(data=>{
-            if (!isSilence) console.log(data)
-          })
-      });
-    //-----------------------------------------
-    //tra den phien tiep theo
-    next(); 
-    }
-
     //getKey de su dung dich vu
     createServiceKey(service_id){
         
@@ -612,6 +568,8 @@ class HandleDatabase {
         }
 
     }
+
+    
     createUser(userInfo){
         var userInfoSQL ={
             name: 'LOCAL_USERS',
@@ -929,6 +887,51 @@ class HandleDatabase {
             res.end(JSON.stringify({message:"No User Info!"}));
         }
     }
+
+
+    //log truy cap tu request
+    logAccess(req, res, next){
+        //doan lay thong tin cac bien su dung sau nay
+     var reqUrlString = req.url;
+     var method = req.method;
+     var pathName = decodeURIComponent(url.parse(reqUrlString, true, false).pathname);
+     var reqFullHost = req.protocol + '://' + req.get('host');
+     
+     var log = {
+         name: 'LOG_ACCESS',
+         cols: [{
+             name: 'IP',
+             value: req.ip
+         },
+         {
+             name: 'ACCESS_INFO',
+             value: method + " " + reqFullHost + '/' + pathName
+         },
+         {
+             name: 'DEVICE_INFO',
+             value: req.headers["user-agent"]
+         }
+         ],
+         wheres: [{
+             name: 'IP',
+             value: req.ip
+         }]
+     };
+     db.insert(log)
+       .then(data => {
+         if (!isSilence) console.log(data)
+         }
+       )
+       .catch(err=>{
+           db.runSql("update LOG_ACCESS set LOG_COUNT=LOG_COUNT+1 where IP='"+req.ip+"'")
+           .then(data=>{
+             if (!isSilence) console.log(data)
+           })
+       });
+     //-----------------------------------------
+     //tra den phien tiep theo
+     next(); 
+     }
 
 }
 

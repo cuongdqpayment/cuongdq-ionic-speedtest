@@ -1,18 +1,8 @@
 "use strict"
-
 const sqlite3 = require('sqlite3').verbose();
-const Promise = require('bluebird');
 const isSilence = require('./config').keep_silence;
 
-/* var dataType = {};
-
-dataType.integer = 'INTEGER';
-dataType.text = 'TEXT';
-
-module.exports = dataType;
- */
-
-class AppDAO {
+class SQLiteDAO {
   constructor(dbFilePath) {
     this.db = new sqlite3.Database(dbFilePath, (err) => {
       if (err) {
@@ -256,4 +246,4 @@ class AppDAO {
 
 }
 
-module.exports = AppDAO; 
+module.exports = SQLiteDAO; 
