@@ -7,20 +7,12 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
-import { LoginPage } from '../pages/login/login';
-import { RegisterPage } from '../pages/register/register';
-import { SettingPage } from '../pages/setting/setting';
-import { ApiService } from '../services/apiService';
-import { ApiAuthService } from '../services/apiAuthService';
-import { ApiImageService } from '../services/apiImageService';
+
 
 @NgModule({
   declarations: [
     MyApp,
-    HomePage,
-    RegisterPage,
-    LoginPage,
-    SettingPage
+    HomePage
   ],
   imports: [
     BrowserModule,
@@ -32,17 +24,11 @@ import { ApiImageService } from '../services/apiImageService';
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    HomePage,
-    RegisterPage,
-    LoginPage,
-    SettingPage
+    HomePage
   ],
   providers: [
     StatusBar,
     SplashScreen,
-    ApiService,
-    ApiAuthService,
-    ApiImageService,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

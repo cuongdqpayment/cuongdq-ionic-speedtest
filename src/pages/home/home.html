@@ -1,64 +1,36 @@
-<ion-header>
-  <ion-navbar>
-          <button ion-button menuToggle color="primary">
-            <ion-icon name="menu"></ion-icon>
-          </button>
-          <ion-buttons start>
-              <img src="assets/imgs/logo.png">
-          </ion-buttons>
-          <ion-buttons end>
-              <button ion-button icon-only color="royal" (click)="forwardWeb()">
-                <ion-icon name="notifications" ios="ios-notifications" md="md-notifications"></ion-icon>
-                <ion-badge color="danger" *ngIf="page > 0">{{ page }}</ion-badge>
-              </button>
-          </ion-buttons>
-  </ion-navbar>
-</ion-header>
-
 <ion-content>
-  <ion-grid>
-    <ion-row>
-      <ion-col *ngFor="let user of users" col-12 col-xl-4 col-lg-4 col-md-6 col-sm-6>
-        <ion-card>
-          <ion-item>
-            <ion-avatar item-start>
-              <img [src]="user.picture?.medium">
-            </ion-avatar>
-            <h2 text-capitalize>{{ user.name?.first }} {{ user.name?.last }}</h2>
-          </ion-item>
-          <ion-card-content>
-            Đây là nội dung BIẾT làm sao đây nè
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-  <ion-infinite-scroll (ionInfinite)="doInfinite($event)">
-    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more data..."></ion-infinite-scroll-content>
-  </ion-infinite-scroll>
+    <div id="startStopBtn" onclick="startStop()"></div>
+    <div id="test">
+      <div class="testGroup">
+        <div class="testArea">
+          <div class="testName">Download</div>
+          <canvas id="dlMeter" class="meter"></canvas>
+          <div id="dlText" class="meterText"></div>
+          <div class="unit">Mbps</div>
+        </div>
+        <div class="testArea">
+          <div class="testName">Upload</div>
+          <canvas id="ulMeter" class="meter"></canvas>
+          <div id="ulText" class="meterText"></div>
+          <div class="unit">Mbps</div>
+        </div>
+      </div>
+      <div class="testGroup">
+        <div class="testArea">
+          <div class="testName">Ping</div>
+          <canvas id="pingMeter" class="meter"></canvas>
+          <div id="pingText" class="meterText"></div>
+          <div class="unit">ms</div>
+        </div>
+        <div class="testArea">
+          <div class="testName">Jitter</div>
+          <canvas id="jitMeter" class="meter"></canvas>
+          <div id="jitText" class="meterText"></div>
+          <div class="unit">ms</div>
+        </div>
+      </div>
+      <div id="ipArea">
+        IP Address: <span id="ip"></span>
+      </div>
+    </div>  
 </ion-content>
-<ion-footer>
-    <ion-toolbar color="primary">
-        <ion-buttons start>
-          <button ion-button icon-only color="royal">
-            <ion-icon name="logo-googleplus"></ion-icon>
-          </button>
-        </ion-buttons>
-        <ion-buttons left>
-            <button ion-button icon-only color="royal">
-              <ion-icon name="thumbs-up" ios="ios-thumbs-up" md="md-thumbs-up"></ion-icon>
-            </button>
-          </ion-buttons>
-        <ion-buttons right>
-            <button ion-button icon-only color="royal">
-              <ion-icon name="chatbubbles" ios="ios-chatbubbles" md="md-chatbubbles"></ion-icon>
-            </button>
-          </ion-buttons>
-        <ion-title>cuongdq.payment@gmail.com</ion-title>
-        <ion-buttons end>
-          <button ion-button icon-only color="royal">
-            <ion-icon name="logo-facebook"></ion-icon>
-          </button>
-        </ion-buttons>
-      </ion-toolbar>
-</ion-footer>

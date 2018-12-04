@@ -29,10 +29,10 @@ var settings = {
   time_ulGraceTime: 3, //time to wait in seconds before actually measuring ul speed (wait for buffers to fill)
   time_dlGraceTime: 1.5, //time to wait in seconds before actually measuring dl speed (wait for TCP window to increase)
   count_ping: 10, // number of pings to perform in ping test
-  url_dl: 'speedtest/dowload', // path to a large file or garbage.php, used for download test. must be relative to this js file
-  url_ul: 'speedtest/empty', // path to an empty file, used for upload test. must be relative to this js file
-  url_ping: 'speedtest/empty', // path to an empty file, used for ping test. must be relative to this js file
-  url_getIp: 'speedtest/get-ip', // path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
+  url_dl: '/speedtest/dowload', // path to a large file or garbage.php, used for download test. must be relative to this js file
+  url_ul: '/speedtest/empty', // path to an empty file, used for upload test. must be relative to this js file
+  url_ping: '/speedtest/empty', // path to an empty file, used for ping test. must be relative to this js file
+  url_getIp: '/speedtest/get-ip', // path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
   getIp_ispInfo: true, //if set to true, the server will include ISP info with the IP address
   getIp_ispInfo_distance: 'km', //km or mi=estimate distance from server in km/mi; set to false to disable distance estimation. getIp_ispInfo must be enabled in order for this to work
   xhr_dlMultistream: 10, // number of download streams to use (can be different if enable_quirks is active)
@@ -47,7 +47,7 @@ var settings = {
   overheadCompensationFactor: 1.06, //can be changed to compensatie for transport overhead. (see doc.md for some other values)
   useMebibits: false, //if set to true, speed will be reported in mebibits/s instead of megabits/s
   telemetry_level: 0, // 0=disabled, 1=basic (results only), 2=full (results+log)
-  url_telemetry: 'telemetry/telemetry.php', // path to the script that adds telemetry data to the database
+  url_telemetry: 'speedtest/save-results', // path to the script that adds telemetry data to the database
   telemetry_extra: '' //extra data that can be passed to the telemetry through the settings
 }
 
