@@ -23,15 +23,14 @@ router.get('/get-ip',(req,res,next)=>{
     console.log(req);
 
     var ip;
-    if (req.headers["http_client_ip"]){
-        ip=req.headers["http_client_ip"];
+    if (req.headers["client_ip"]){
+        ip=req.headers["client_ip"];
     }else if (req.headers["x-real-ip"]){
         ip=req.headers["x-real-ip"];
-    }else if (req.headers["http_x_forwarded_for"]){
-        ip=req.headers["http_x_forwarded_for"].replace("/,.*/", "");
+    }else if (req.headers["x-forwarded-for"]){
+        ip=req.headers["x-forwarded-for"];
     }else if (req.headers["remote_add"]){
         ip=req.headers["remote_add"];
-
     }else{
         ip=req.ip;
     }
@@ -52,8 +51,6 @@ router.get('/get-ip',(req,res,next)=>{
             message:"localhost ipv4 access"
         }));
     }
-
- 
 
     console.log('ip:');
     console.log(ip);
