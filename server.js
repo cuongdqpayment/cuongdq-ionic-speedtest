@@ -79,7 +79,6 @@ function main(isHttp, isHttps) {
   app.get('/api/user-settings', handlers.tokenGetCheck, middleware.db.HandleDatabase.getUserInfo);
 
 
-
   //de truyen csdl vao doi tuong nao viet ham nhu sau
   /* app.use((res,res,next)=>{
       //callFunction(req,res,next,middleware.db)
