@@ -1,7 +1,7 @@
 
 #ionic build --prod 
 #su dung cordova, build browser de tao www
-#ionic cordova build browser --prod --release
+ionic cordova build browser --prod --release
 
 git add .
 git commit -am 'HEROKU Deployment by cuongdq'
