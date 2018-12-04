@@ -35,7 +35,7 @@ router.get('/get-ip',(req,res,next)=>{
     console.log('ip raw:');
     console.log(ip);
 
-    ip.replace("::ffff:", "");
+    ip = ip.replace(/f+/, '').replace(/:+/, '');
 
     if (ip.indexOf('::1')>=0){
         res.end(JSON.stringify({
@@ -57,7 +57,10 @@ router.get('/get-ip',(req,res,next)=>{
     //lay thong tin cua dia chi ip
     var ispObj = getIsp(ip);
     if (ispObj){
-        res.end(JSON.stringify(ispObj));
+        res.end(JSON.stringify({
+            processedString:ip,
+            rawIspInfo:ispObj
+        }));
     }else{
         res.end(JSON.stringify({
             status:false,
