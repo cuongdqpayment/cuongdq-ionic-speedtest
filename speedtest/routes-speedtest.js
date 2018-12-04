@@ -56,20 +56,22 @@ router.get('/get-ip',(req,res,next)=>{
     console.log(ip);
 
     //lay thong tin cua dia chi ip
-    var ispObj = getIsp(ip);
-    console.log('ispObj');
-    console.log(ispObj);
-    if (ispObj){
+    getIsp(ip)
+    .then(data=>{
+        console.log('ispObj');
+        console.log(data);
         res.end(JSON.stringify({
             processedString: ip,
-            rawIspInfo: ispObj
+            rawIspInfo: data
         }));
-    }else{
+    })
+    .catch(err=>{
         res.end(JSON.stringify({
             status:false,
-            message:"Error to get ISP ip!"
+            message:"Error to get ISP ip!",
+            err:err
         }));
-    }
+    });
 
 })
 
@@ -101,44 +103,52 @@ router.get('/dowload',(req,res,next)=>{
 
 //lay toa do cua client
 function getIsp(ip){
-    request('https://ipinfo.io/'+ip+'/json', function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            console.log(body) // Print the google web page.
-           var client = JSON.parse(body);
-           console.log('client') // Print the google web page.
-           console.log(client) // Print the google web page.
-           
-           if (client&&client.loc&&client.loc[0]&&client.loc[1]){
-                console.log('Get Distance...') // Print the google web page.
-                client.distance = getServerDistance(client);
-                console.log(client.distance) // Print the google web page.
-            }   
-            return client;
-        } else {
-            console.log(error);
-            return;
-        }
+    return new Promise((resolve,reject)=>{
+        request('https://ipinfo.io/'+ip+'/json', function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                console.log(body) // Print the google web page.
+               var client = JSON.parse(body);
+               console.log('client') // Print the google web page.
+               console.log(client) // Print the google web page.
+               
+               if (client&&client.loc&&client.loc[0]&&client.loc[1]){
+                    console.log('Get Distance...') // Print the google web page.
+                    getServerDistance(client)
+                    .then(data=>{
+                        client.distance =data
+                        console.log(client.distance) // Print the google web page.
+                    });
+                } else  {
+                    reject({err:'No Client location'})
+                }  
+            } else {
+                console.log(error);
+                reject(error);
+            }
+        });
     });
 }
 
 //lay toa do, cua may chu 
 function getServerDistance(client){
-    request('https://ipinfo.io/json', function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-           var server = JSON.parse(body);
-           console.log('server') // Print the google web page.
-           console.log(server) // Print the google web page.
-
-           if (server&&server.loc&&server.loc[0]&&server.loc[1]){
-               return getDistance(server.loc[0]&&server.loc[1],
-                                  client.loc[0],client.loc[1]);
-           }else{
-               return;
-           }
-        } else {
-            console.log(error);
-            return;
-        }
+    return new Promise((resolve,reject)=>{
+        request('https://ipinfo.io/json', function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+               var server = JSON.parse(body);
+               console.log('server') // Print the google web page.
+               console.log(server) // Print the google web page.
+               if (server&&server.loc&&server.loc[0]&&server.loc[1]){
+                   resolve(getDistance(server.loc[0]&&server.loc[1],
+                                      client.loc[0],client.loc[1])
+                           );
+               }else{
+                reject({err:'No server Loction'});
+               }
+            } else {
+                console.log(error);
+                reject(error);
+            }
+        });
     });
 }
 
