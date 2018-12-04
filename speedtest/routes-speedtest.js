@@ -27,10 +27,16 @@ router.get('/get-ip',(req,res,next)=>{
         ip=req.headers["http_x_forwarded_for"].replace("/,.*/", "");
     }else if (req.headers["remote_add"]){
         ip=req.headers["remote_add"];
+
     }else{
         ip=req.ip;
     }
+
+    console.log('ip raw:');
+    console.log(ip);
+
     ip.replace("/^::ffff:/", "");
+
     if (ip.indexOf('::1')>=0){
         res.end(JSON.stringify({
             status:false,
@@ -42,6 +48,11 @@ router.get('/get-ip',(req,res,next)=>{
             message:"localhost ipv4 access"
         }));
     }
+
+ 
+
+    console.log('ip:');
+    console.log(ip);
 
     //lay thong tin cua dia chi ip
     var ispObj = getIsp(ip);

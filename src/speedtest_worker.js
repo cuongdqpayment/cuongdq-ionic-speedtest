@@ -187,6 +187,9 @@ function getIp(done) {
   xhr.onload = function () {
     tlog("IP: " + xhr.responseText)
     try {
+      console.log('xhr.responseText');
+      console.log(xhr.responseText);
+
       var data = JSON.parse(xhr.responseText)
       clientIp = data.processedString
       ispInfo = data.rawIspInfo
