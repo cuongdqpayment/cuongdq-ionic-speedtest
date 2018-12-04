@@ -159,7 +159,7 @@ function startStop(){
 		initUI();
 	}else{
 		//test is not running, begin
-		w=new Worker('speedtest_worker.min.js');
+		w=new Worker('speedtest_worker.js');
 		w.postMessage('start'); //Add optional parameters as a JSON object to this command
 		I("startStopBtn").className="running";
 		w.onmessage=function(e){
@@ -253,6 +253,7 @@ function initUI(){
 		IP Address: <span id="ip"></span>
 	</div>
 </div>
+<a href="https://github.com/adolfintel/speedtest">Source code</a>
 <script type="text/javascript">setTimeout(initUI,100);</script>
 </body>
 </html>
