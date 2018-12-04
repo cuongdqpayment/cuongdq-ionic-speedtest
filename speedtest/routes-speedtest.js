@@ -20,7 +20,7 @@ router.get('/get-ip',(req,res,next)=>{
 
 
     console.log('req:');
-    console.log(JSON.stringify(req));
+    console.log(req);
 
     var ip;
     if (req.headers["http_client_ip"]){
