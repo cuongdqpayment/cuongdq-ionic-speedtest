@@ -57,6 +57,8 @@ router.get('/get-ip',(req,res,next)=>{
 
     //lay thong tin cua dia chi ip
     var ispObj = getIsp(ip);
+    console.log('ispObj');
+    console.log(ispObj);
     if (ispObj){
         res.end(JSON.stringify({
             processedString: ip,
@@ -109,6 +111,7 @@ function getIsp(ip){
            if (client&&client.loc&&client.loc[0]&&client.loc[1]){
                 console.log('Get Distance...') // Print the google web page.
                 client.distance = getServerDistance(client);
+                console.log(client.distance) // Print the google web page.
             }   
             return client;
         } else {
