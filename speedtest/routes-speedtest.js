@@ -35,7 +35,7 @@ router.get('/get-ip',(req,res,next)=>{
     console.log('ip raw:');
     console.log(ip);
 
-    ip.replace("/^::ffff:/", "");
+    ip.replace("::ffff:", "");
 
     if (ip.indexOf('::1')>=0){
         res.end(JSON.stringify({
