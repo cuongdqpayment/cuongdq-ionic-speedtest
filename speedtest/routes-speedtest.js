@@ -18,6 +18,10 @@ router.get('/get-ip',(req,res,next)=>{
         'Content-Type'  : 'application/json; charset=utf-8'
     });
 
+
+    console.log('req:');
+    console.log(JSON.stringify(req));
+
     var ip;
     if (req.headers["http_client_ip"]){
         ip=req.headers["http_client_ip"];
