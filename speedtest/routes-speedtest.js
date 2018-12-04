@@ -19,8 +19,8 @@ router.get('/get-ip',(req,res,next)=>{
     });
 
 
-    console.log('req:');
-    console.log(req);
+    // console.log('req:');
+    // console.log(req);
 
     var ip;
     if (req.headers["client_ip"]){
@@ -59,8 +59,8 @@ router.get('/get-ip',(req,res,next)=>{
     var ispObj = getIsp(ip);
     if (ispObj){
         res.end(JSON.stringify({
-            processedString:ip,
-            rawIspInfo:ispObj
+            processedString: ip,
+            rawIspInfo: ispObj
         }));
     }else{
         res.end(JSON.stringify({
@@ -113,10 +113,15 @@ function getIsp(ip){
                 "org": "AS18403 The Corporation for Financing & Promoting Technology"
                 }
             */  
-           if (body&&body.loc&&body.loc[0]&&body.loc[1]){
-                body.distance = getServerDistance(body);
+           var client = JSON.parse(body);
+           console.log('client') // Print the google web page.
+           console.log(client) // Print the google web page.
+           
+           if (client&&client.loc&&client.loc[0]&&client.loc[1]){
+                console.log('Get Distance...') // Print the google web page.
+                client.distance = getServerDistance(client);
             }   
-            return body;
+            return client;
         } else {
             console.log(error);
             return;
@@ -140,9 +145,13 @@ function getServerDistance(client){
                 "loc": "16.0000,106.0000",
                 "org": "AS45899 VNPT Corp"
                 }
-            */        
-           if (body&&body.loc&&body.loc[0]&&body.loc[1]){
-               return getDistance(body.loc[0]&&body.loc[1],client.loc[0],client.loc(1));
+            */    
+           var server = JSON.parse(body);
+           console.log('server') // Print the google web page.
+           console.log(server) // Print the google web page.
+
+           if (server&&server.loc&&server.loc[0]&&server.loc[1]){
+               return getDistance(server.loc[0]&&server.loc[1],client.loc[0],client.loc(1));
            }else{
                return;
            }
