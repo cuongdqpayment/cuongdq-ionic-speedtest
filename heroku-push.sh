@@ -6,6 +6,6 @@
 git add .
 git commit -am 'HEROKU Deployment by cuongdq'
 #git remote rm heroku
-#heroku git:remote -a cuongdq-ionic
+#heroku git:remote -a cuongdq-speedtest
 git push heroku master
 heroku open

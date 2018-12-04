@@ -29,10 +29,10 @@ var settings = {
   time_ulGraceTime: 3, //time to wait in seconds before actually measuring ul speed (wait for buffers to fill)
   time_dlGraceTime: 1.5, //time to wait in seconds before actually measuring dl speed (wait for TCP window to increase)
   count_ping: 10, // number of pings to perform in ping test
-  url_dl: 'speedtest/dowload', // path to a large file or garbage.php, used for download test. must be relative to this js file
-  url_ul: 'speedtest/empty', // path to an empty file, used for upload test. must be relative to this js file
-  url_ping: 'speedtest/empty', // path to an empty file, used for ping test. must be relative to this js file
-  url_getIp: 'speedtest/get-ip', // path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
+  url_dl: '/speedtest/dowload', // path to a large file or garbage.php, used for download test. must be relative to this js file
+  url_ul: '/speedtest/empty', // path to an empty file, used for upload test. must be relative to this js file
+  url_ping: '/speedtest/empty', // path to an empty file, used for ping test. must be relative to this js file
+  url_getIp: '/speedtest/get-ip', // path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
   getIp_ispInfo: true, //if set to true, the server will include ISP info with the IP address
   getIp_ispInfo_distance: 'km', //km or mi=estimate distance from server in km/mi; set to false to disable distance estimation. getIp_ispInfo must be enabled in order for this to work
   xhr_dlMultistream: 10, // number of download streams to use (can be different if enable_quirks is active)
@@ -202,8 +202,12 @@ function getIp(done) {
   }
 
   //1.../lay ip ve ghi ra form
+  var url_getIP = settings.url_getIp + url_sep(settings.url_getIp) + (settings.getIp_ispInfo ? ("isp=true" + (settings.getIp_ispInfo_distance ? ("&distance=" + settings.getIp_ispInfo_distance + "&") : "&")) : "&") + 'r=' + Math.random();
+  
+  console.log('1. url_getIP');
+  console.log(url_getIP);
 
-  xhr.open('GET', settings.url_getIp + url_sep(settings.url_getIp) + (settings.getIp_ispInfo ? ("isp=true" + (settings.getIp_ispInfo_distance ? ("&distance=" + settings.getIp_ispInfo_distance + "&") : "&")) : "&") + 'r=' + Math.random(), true)
+  xhr.open('GET', url_getIP, true)
   xhr.send()
 }
 //2. download test, calls done function when it's over
@@ -249,7 +253,15 @@ function dlTest(done) {
       }.bind(this)
       // send xhr
       try { if (settings.xhr_dlUseBlob) xhr[i].responseType = 'blob'; else xhr[i].responseType = 'arraybuffer' } catch (e) { }
-      xhr[i].open('GET', settings.url_dl + url_sep(settings.url_dl) + 'r=' + Math.random() + '&ckSize=' + settings.garbagePhp_chunkSize, true) // random string to prevent caching
+      
+      //2. 
+      var url_dowload_test = settings.url_dl + url_sep(settings.url_dl) + 'r=' + Math.random() + '&ckSize=' + settings.garbagePhp_chunkSize;
+  
+      console.log('2. url_dowload_test');
+      console.log(url_dowload_test);
+
+      xhr[i].open('GET', url_dowload_test, true) // random string to prevent caching
+      
       xhr[i].send()
     }.bind(this), 1 + delay)
   }.bind(this)
@@ -367,7 +379,14 @@ function ulTest(done) {
           if (settings.xhr_ignoreErrors === 1) testStream(i, 0) //restart stream
         }.bind(this)
         // send xhr
-        xhr[i].open('POST', settings.url_ul + url_sep(settings.url_ul) + 'r=' + Math.random(), true) // random string to prevent caching
+
+        //3..
+        var url_upload_test = settings.url_ul + url_sep(settings.url_ul) + 'r=' + Math.random();
+  
+        console.log('3. url_upload_test');
+        console.log(url_upload_test);
+        
+        xhr[i].open('POST', url_upload_test, true) // random string to prevent caching
         xhr[i].setRequestHeader('Content-Encoding', 'identity') // disable compression (some browsers may refuse it, but data is incompressible anyway)
         xhr[i].send(req)
       }
@@ -473,13 +492,20 @@ function pingTest(done) {
         if (i < settings.count_ping) doPing(); else done() // more pings to do?
       }
     }.bind(this)
-    // send xhr
-    xhr[0].open('GET', settings.url_ping + url_sep(settings.url_ping) + 'r=' + Math.random(), true) // random string to prevent caching
+
+    //4 ping test
+    var url_ping_test = settings.url_ping + url_sep(settings.url_ping) + 'r=' + Math.random();
+  
+    console.log('4. url_ping_test');
+    console.log(url_ping_test);
+
+    xhr[0].open('GET', url_ping_test, true) // random string to prevent caching
+    
     xhr[0].send()
   }.bind(this)
   doPing() // start first ping
 }
-// telemetry
+// telemetry gui ket qua ve server database luu lai
 function sendTelemetry(done) {
   if (settings.telemetry_level < 1) return
   xhr = new XMLHttpRequest()
@@ -497,7 +523,14 @@ function sendTelemetry(done) {
     }
   }
   xhr.onerror = function () { console.log('TELEMETRY ERROR ' + xhr); done(-1) }
-  xhr.open('POST', settings.url_telemetry + url_sep(settings.url_telemetry) + "r=" + Math.random(), true);
+  
+  var url_telemetry = settings.url_telemetry + url_sep(settings.url_telemetry) + "r=" + Math.random();
+  
+  console.log('5. url_telemetry');
+  console.log(url_telemetry);
+
+  xhr.open('POST', url_telemetry, true);
+  
   var telemetryIspInfo = {
     processedString: clientIp,
     rawIspInfo: (typeof ispInfo === "object") ? ispInfo : ""
