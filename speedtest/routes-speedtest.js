@@ -102,17 +102,6 @@ function getIsp(ip){
     request('https://ipinfo.io/'+ip+'/json', function (error, response, body) {
         if (!error && response.statusCode == 200) {
             console.log(body) // Print the google web page.
-            //doc body lay mot anh dai dien?? icon??
-            /**
-             * {
-                "ip": "210.245.119.136",
-                "city": "Ho Chi Minh City",
-                "region": "Ho Chi Minh",
-                "country": "VN",
-                "loc": "10.8142,106.6440",
-                "org": "AS18403 The Corporation for Financing & Promoting Technology"
-                }
-            */  
            var client = JSON.parse(body);
            console.log('client') // Print the google web page.
            console.log(client) // Print the google web page.
@@ -133,25 +122,13 @@ function getIsp(ip){
 function getServerDistance(client){
     request('https://ipinfo.io/json', function (error, response, body) {
         if (!error && response.statusCode == 200) {
-            //console.log(body) // Print the google web page.
-            //doc body lay mot anh dai dien?? icon??
-            /**
-             * {
-                "ip": "14.167.2.166",
-                "hostname": "static.vnpt.vn",
-                "city": "",
-                "region": "",
-                "country": "VN",
-                "loc": "16.0000,106.0000",
-                "org": "AS45899 VNPT Corp"
-                }
-            */    
            var server = JSON.parse(body);
            console.log('server') // Print the google web page.
            console.log(server) // Print the google web page.
 
            if (server&&server.loc&&server.loc[0]&&server.loc[1]){
-               return getDistance(server.loc[0]&&server.loc[1],client.loc[0],client.loc(1));
+               return getDistance(server.loc[0]&&server.loc[1],
+                                  client.loc[0],client.loc[1]);
            }else{
                return;
            }
