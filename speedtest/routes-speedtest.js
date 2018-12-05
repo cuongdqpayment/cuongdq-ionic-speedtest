@@ -1,8 +1,8 @@
 const router = require('express').Router();
 const request = require('request');
 
-//su dung ping
-router.get('/empty',(req,res,next)=>{
+//su dung ping, upload, replace ...
+router.all('/empty',(req,res,next)=>{
     res.writeHead(200, { 
         'Cache-Control' : 'no-store, no-cache, must-revalidate, max-age=0',
         'Cache-Control' : 'post-check=0, pre-check=0', //append
