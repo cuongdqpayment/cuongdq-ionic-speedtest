@@ -57,12 +57,13 @@ router.get('/get-ip',(req,res,next)=>{
 
     //lay thong tin cua dia chi ip
     getIsp(ip)
-    .then(data=>{
-        console.log('ispObj');
-        console.log(data);
+    .then(client_sever=>{
+        console.log('client_sever:');
+        console.log(client_sever);
         res.end(JSON.stringify({
             processedString: ip,
-            rawIspInfo: data
+            rawIspInfo: client_sever.client,
+            server: client_sever.server
         }));
     })
     .catch(err=>{
@@ -107,17 +108,22 @@ function getIsp(ip){
     return new Promise((resolve,reject)=>{
         request('https://ipinfo.io/'+ip+'/json', function (error, response, body) {
             if (!error && response.statusCode == 200) {
-                console.log(body) // Print the google web page.
+                console.log(body)
                var client = JSON.parse(body);
-               console.log('client') // Print the google web page.
-               console.log(client) // Print the google web page.
+               console.log('client') 
+               console.log(client)
                
                if (client&&client.loc&&client.loc[0]&&client.loc[1]){
                     console.log('Get Distance...') // Print the google web page.
                     getServerDistance(client)
-                    .then(data=>{
-                        client.distance =data
-                        console.log(client.distance) // Print the google web page.
+                    .then(server=>{
+                        console.log('server distance: ') // Print the google web page.
+                        console.log(server) // Print the google web page.
+                        resolve({
+                            client: client,
+                            server: server,
+                            distance : server.distance
+                        });
                     });
                 } else  {
                     reject({err:'No Client location'})
@@ -139,9 +145,13 @@ function getServerDistance(client){
                console.log('server') // Print the google web page.
                console.log(server) // Print the google web page.
                if (server&&server.loc&&server.loc[0]&&server.loc[1]){
-                   resolve(getDistance(server.loc[0]&&server.loc[1],
-                                      client.loc[0],client.loc[1])
-                           );
+                   //khoang cach tu client den server
+                    server.distance = getDistance(
+                                                server.loc[0]
+                                                ,server.loc[1]
+                                                ,client.loc[0]
+                                                ,client.loc[1]);
+                   resolve(server);
                }else{
                 reject({err:'No server Loction'});
                }
