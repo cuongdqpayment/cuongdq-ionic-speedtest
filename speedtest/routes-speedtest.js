@@ -5,7 +5,7 @@ const request = require('request');
 router.get('/empty',(req,res,next)=>{
     res.writeHead(200, { 
         'Cache-Control' : 'no-store, no-cache, must-revalidate, max-age=0',
-        'Cache-Control' : 'post-check=0, pre-check=0', //false
+        'Cache-Control' : 'post-check=0, pre-check=0', //append
         'Pragma'        : 'no-cache',
         'Connection'    : 'keep-alive'
     });
@@ -75,15 +75,16 @@ router.get('/get-ip',(req,res,next)=>{
 
 })
 
-//tra ve mot goi tin danh gia toc do dowload
-router.get('/dowload',(req,res,next)=>{
+//tra ve mot goi tin danh gia toc do download
+router.get('/download',(req,res,next)=>{
     //lay dia chi ip va tra ve vi tri ip o dau 
     res.writeHead(200, { 
         'Content-Description'           : 'File Transfer',
         'Content-Type'                  : 'application/octet-stream',
-        'ontent-Disposition'            : 'attachment; filename=random.dat',
+        'Content-Disposition'           : 'attachment; filename=random.dat',
+        'Content-Transfer-Encoding'     : 'binary',
         'Cache-Control'                 : 'no-store, no-cache, must-revalidate, max-age=0',
-        'Content-Transfer-Encoding'     : 'post-check=0, pre-check=0', //false
+        'Cache-Control'                 : 'post-check=0, pre-check=0', //no replace
         'Pragma'                        : 'no-cache'
     });
     var buff = Buffer.alloc(1048576,'x');

@@ -8,6 +8,8 @@ const certificate = fs.readFileSync('cert/certificate.pem', 'utf8');
 
 const credentials = { key: privateKey, cert: certificate };
 const os = require('os');
+const HandlersExpress = require('./server-handles/handle-express');
+const handlers = new HandlersExpress();
 
 // Starting point of the server
 function main(isHttp, isHttps) {
@@ -16,7 +18,7 @@ function main(isHttp, isHttps) {
   
   //thiet lap cac tham so header dieu khien chung
   //cho phep goi qua ajax ...
-  //app.use(handlers.cors);
+  app.use(handlers.cors);
   
   //1.dang ky duong dan tuyet doi co dinh cho ionic
   app.use(express.static(__dirname + '/www'));

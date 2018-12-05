@@ -20,7 +20,9 @@
 
   <script type="text/javascript">
     function I(id) { return document.getElementById(id); }
+    
     var meterBk = "#E0E0E0";
+    
     var dlColor = "#6060AA",
       ulColor = "#309030",
       pingColor = "#AA6060",
@@ -75,7 +77,13 @@
       } else {
         //test is not running, begin
         w = new Worker('speedtest_worker.js');
-        w.postMessage('start'); //Add optional parameters as a JSON object to this command
+        w.postMessage('start'); //w.postMessage(datavalue) --> w.addEventListener('message')
+        //Add optional parameters as a JSON object to this command
+        //gui lenh start de json --> this.addEventListener('message', function (e){
+        //e.data = datavalue la du lieu truyen di nhan duoc
+        //e.origin la doi tuong gui den
+        //tra loi noi goi: e.source.postMessage(data,e.origin)
+        //}
         I("startStopBtn").className = "running";
         w.onmessage = function (e) {
           data = JSON.parse(e.data);
@@ -108,7 +116,7 @@
     }
     //poll the status from the worker (this will call updateUI)
     setInterval(function () {
-      if (w) w.postMessage('status');
+      if (w) w.postMessage('status'); //lay trang thai cho toi
     }, 200);
     //update the UI every frame
     window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || (function (callback, element) { setTimeout(callback, 1000 / 60); });
