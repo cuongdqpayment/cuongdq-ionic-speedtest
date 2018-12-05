@@ -29,7 +29,7 @@ var settings = {
   time_ulGraceTime: 3, //time to wait in seconds before actually measuring ul speed (wait for buffers to fill)
   time_dlGraceTime: 1.5, //time to wait in seconds before actually measuring dl speed (wait for TCP window to increase)
   count_ping: 10, // number of pings to perform in ping test
-  url_dl: '/speedtest/dowload', // path to a large file or garbage.php, used for download test. must be relative to this js file
+  url_dl: '/speedtest/download', // path to a large file or garbage.php, used for download test. must be relative to this js file
   url_ul: '/speedtest/empty', // path to an empty file, used for upload test. must be relative to this js file
   url_ping: '/speedtest/empty', // path to an empty file, used for ping test. must be relative to this js file
   url_getIp: '/speedtest/get-ip', // path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
@@ -47,7 +47,7 @@ var settings = {
   overheadCompensationFactor: 1.06, //can be changed to compensatie for transport overhead. (see doc.md for some other values)
   useMebibits: false, //if set to true, speed will be reported in mebibits/s instead of megabits/s
   telemetry_level: 0, // 0=disabled, 1=basic (results only), 2=full (results+log)
-  url_telemetry: 'telemetry/telemetry.php', // path to the script that adds telemetry data to the database
+  url_telemetry: '/speedtest/save-results', // path to the script that adds telemetry data to the database
   telemetry_extra: '' //extra data that can be passed to the telemetry through the settings
 }
 
@@ -71,6 +71,8 @@ function url_sep(url) { return url.match(/\?/) ? '&' : '?'; }
 this.addEventListener('message', function (e) {
   var params = e.data.split(' ')
   if (params[0] === 'status') { // return status
+    //cu 200ms thi main thread post 1 yeu cau lay trang thai
+    //thi lap tuc dap tra trang thai cho main 
     postMessage(JSON.stringify({
       testState: testStatus,
       dlStatus: dlStatus,
@@ -187,6 +189,9 @@ function getIp(done) {
   xhr.onload = function () {
     tlog("IP: " + xhr.responseText)
     try {
+      console.log('xhr.responseText');
+      console.log(xhr.responseText);
+
       var data = JSON.parse(xhr.responseText)
       clientIp = data.processedString
       ispInfo = data.rawIspInfo
@@ -211,8 +216,10 @@ function getIp(done) {
   xhr.send()
 }
 //2. download test, calls done function when it's over
+var countDL = 0;
 var dlCalled = false // used to prevent multiple accidental calls to dlTest
 function dlTest(done) {
+  countDL = 0;
   tlog('dlTest')
   if (dlCalled) return; else dlCalled = true // dlTest already called?
   var totLoaded = 0.0, // total number of loaded bytes
@@ -257,8 +264,8 @@ function dlTest(done) {
       //2. 
       var url_dowload_test = settings.url_dl + url_sep(settings.url_dl) + 'r=' + Math.random() + '&ckSize=' + settings.garbagePhp_chunkSize;
   
-      console.log('2. url_dowload_test');
-      console.log(url_dowload_test);
+      console.log('2. url_dowload_test ' + countDL++);
+      console.log('GET ' + url_dowload_test);
 
       xhr[i].open('GET', url_dowload_test, true) // random string to prevent caching
       
@@ -299,8 +306,10 @@ function dlTest(done) {
 }
 
 //3. upload test, calls done function whent it's over
+var countUL = 0;
 var ulCalled = false // used to prevent multiple accidental calls to ulTest
 function ulTest(done) {
+  countUL = 0;
   tlog('ulTest')
   if (ulCalled) return; else ulCalled = true // ulTest already called?
   // garbage data for upload test
@@ -383,8 +392,8 @@ function ulTest(done) {
         //3..
         var url_upload_test = settings.url_ul + url_sep(settings.url_ul) + 'r=' + Math.random();
   
-        console.log('3. url_upload_test');
-        console.log(url_upload_test);
+        console.log('3. url_upload_test' + countUL);
+        console.log('POST ' + url_upload_test);
         
         xhr[i].open('POST', url_upload_test, true) // random string to prevent caching
         xhr[i].setRequestHeader('Content-Encoding', 'identity') // disable compression (some browsers may refuse it, but data is incompressible anyway)
