@@ -2,7 +2,27 @@ const router = require('express').Router();
 const request = require('request');
 
 //su dung ping, upload, replace ...
-router.all('/empty',(req,res,next)=>{
+router.get('/empty',(req,res,next)=>{
+    res.writeHead(200, { 
+        'Cache-Control' : 'no-store, no-cache, must-revalidate, max-age=0',
+        'Cache-Control' : 'post-check=0, pre-check=0', //append
+        'Pragma'        : 'no-cache',
+        'Connection'    : 'keep-alive'
+    });
+    res.end();
+})
+
+//phuong thuc upload test
+router.post('/empty',(req,res,next)=>{
+    //var postany = '';
+    // Get all post data when receive data event.
+    req.on('data', (chunk) => {
+        //postany += chunk;
+    });
+    //
+    req.on('end', () => {
+        //do nothing
+    });
     res.writeHead(200, { 
         'Cache-Control' : 'no-store, no-cache, must-revalidate, max-age=0',
         'Cache-Control' : 'post-check=0, pre-check=0', //append
@@ -61,7 +81,9 @@ router.get('/get-ip',(req,res,next)=>{
         console.log('client_sever:');
         console.log(client_sever);
         res.end(JSON.stringify({
-            processedString: ip,
+            processedString: ip 
+                            + (client_sever.client&&client_sever.client.org)?
+                            ' - ' + client_sever.client.org + ', ' + client_sever.client.country:' - Unknow ISP',
             rawIspInfo: client_sever.client,
             server: client_sever.server
         }));
@@ -146,12 +168,15 @@ function getServerDistance(client){
                console.log(server) // Print the google web page.
                if (server&&server.loc&&server.loc[0]&&server.loc[1]){
                    //khoang cach tu client den server
-                    server.distance = getDistance(
-                                                server.loc[0]
-                                                ,server.loc[1]
-                                                ,client.loc[0]
-                                                ,client.loc[1]);
-                   resolve(server);
+                   server.distance = getDistance(
+                       server.loc[0]
+                       ,server.loc[1]
+                       ,client.loc[0]
+                       ,client.loc[1]);
+                       
+                    console.log(server.distance) // Print the google web page.
+                    
+                    resolve(server);
                }else{
                 reject({err:'No server Loction'});
                }
