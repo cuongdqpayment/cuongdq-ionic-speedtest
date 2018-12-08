@@ -81,9 +81,13 @@ router.get('/get-ip',(req,res,next)=>{
         console.log('client_sever:');
         console.log(client_sever);
         res.end(JSON.stringify({
-            processedString: ip 
-                            + (client_sever.client&&client_sever.client.org)?
-                            ' - ' + client_sever.client.org + ', ' + client_sever.client.country:' - Unknow ISP',
+            processedString:(client_sever.client&&client_sever.client.org)?
+                             client_sever.client.ip 
+                             + ' - ' 
+                             + client_sever.client.org 
+                             + ', ' 
+                             + client_sever.client.country
+                             :ip + ' - Unknow ISP',
             rawIspInfo: client_sever.client,
             server: client_sever.server
         }));
